@@ -1,0 +1,24 @@
+body, html {
+	margin:0;
+	padding: 0;
+	overflow:hidden;
+	background-color:rgb(122, 219, 219);
+}
+
+#cr-stage {
+	border:2px solid black;
+	margin:5px;
+}
+
+#notifications {
+	margin: 5px;
+	overflow-y: scroll;
+}
+
+#status-panel {
+	margin-bottom: 10px;
+}
+
+#controls {
+	margin-bottom: 10px;
+}

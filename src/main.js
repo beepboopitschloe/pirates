@@ -64,7 +64,10 @@ Game = {
 		// start Crafty
 		Crafty.init(Game.width(), Game.height(), "cr-stage");
     	Crafty.background('rgb(125, 123, 249)');
-    	Crafty.viewport.scale(3);
+    	//Crafty.viewport.scale(3);
+
+    	// set up notification feed
+    	gui.init();
 
 		Crafty.scene('Loading');
 	}
