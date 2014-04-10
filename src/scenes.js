@@ -43,20 +43,23 @@ Crafty.scene('Game', function() {
 				this.occupied[x][y] = true;
 				this.ports++;
 				if (Crafty('Port').length >= maxPorts) {
-					return;
+					break;
 				}
 			}
 		}
 	}
 
 	this.showVictory = this.bind('PortVisited', function() {
-		this.ports--;
 		if (!Crafty('Port').length) {
-			Crafty.scene('Victory', true);
+			Crafty.scene('GameOver', true);
+		} else {
+			gui.notify({
+				text: 'Visiting port. Only ' + Crafty('Port').length + ' left to go!'
+			});
 		}
 	});
 }, function() {
-	this.unbind('VillageVisited', this.showVictory);
+	this.unbind('PortVisited', this.showVictory);
 });
 
 Crafty.scene('GameOver', function(win) {
@@ -81,6 +84,10 @@ Crafty.scene('GameOver', function(win) {
 
 	this.restartGame = this.bind('KeyDown', function() {
 		Crafty.scene('Game');
+		gui.notify({
+			text: 'Game restarted.',
+			type: 'success'
+		});
 	});
 }, function() {
 	this.unbind('KeyDown', this.restartGame);

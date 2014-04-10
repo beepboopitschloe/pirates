@@ -115,7 +115,6 @@ Crafty.c('Port', {
 	collect: function() {
 		if (!this.collected) {
 	  		this.collected = true;
-	  		//this.color('rgb(100, 100, 100)');
 	  		this.destroy();
 	  		Crafty.trigger('PortVisited', this);
 	  	}
@@ -174,7 +173,14 @@ Crafty.c('PlayerCharacter', {
 	init: function() {
 		this.requires('Actor, Keyboard, spr_player')
 			.bind('EnterFrame', this.update)
-			.bind('MoveFinished', this.checkSquare);
+			.bind('PortVisited', function() { console.log("visit") })
+			.bind('MoveFinished', this.finishMove);
+
+		this.updateStatus({
+			money: 0,
+			food: 1000,
+			crew: 10
+		});
 	},
 
 	update: function() {
@@ -198,6 +204,8 @@ Crafty.c('PlayerCharacter', {
 
 		if (target.x !== undefined) {
 			if (this.canMove) {
+				this.eatFood();
+
 				this.tweenMove(target.x, target.y);
 			} else if (this.moveQueue.target
 						&& this.moveQueue.target.x != target.x
@@ -208,18 +216,97 @@ Crafty.c('PlayerCharacter', {
 		}
 	},
 
+	finishMove: function() {
+		this.checkSquare();
+	},
+
 	checkSquare: function() {
 		var objArray = Game.mapObjects[this.at().x][this.at().y];
 
 		for (var i=0; i<objArray.length; i++) {
-			if (objArray[i].has('Port'))
+			if (objArray[i].has('Port')) {
 				this.visitPort(objArray[i]);
-			else if (objArray[i].has('Enemy'))
+			}
+			else if (objArray[i].has('Enemy')) {
 				this.touchEnemy(objArray[i]);
+			}
+		}
+	},
+
+	money: function(num) {
+		if (num === undefined) {
+			return this.status.money;
+		} else {
+			this.updateStatus({
+				money: num
+			});
+		}
+	},
+
+	food: function(num) {
+		if (num === undefined) {
+			return this.status.food;
+		} else {
+			this.updateStatus({
+				food: num
+			});
+		}
+	},
+
+	crew: function(num) {
+		if (num === undefined) {
+			return this.status.crew;
+		} else {
+			this.updateStatus({
+				crew: num
+			});
+		}
+	},
+
+	updateStatus: function(obj) {
+		if (this.status === undefined) {
+			this.status = {
+				money: 0,
+				food: 0,
+				crew: 0
+			}
+		}
+
+		this.status.money = obj.money !== undefined? Math.floor(obj.money)
+								: this.status.money;
+		this.status.food = obj.food !== undefined? Math.floor(obj.food)
+								: this.status.food;
+		this.status.crew = obj.crew !== undefined? Math.floor(obj.crew)
+								: this.status.crew;
+
+		gui.status({
+			money: this.status.money,
+			food: this.status.food,
+			crew: this.status.crew
+		});
+	},
+
+	eatFood: function() {
+		this.food(this.food() - this.crew()/2);
+
+		if (this.food() <= 0) {
+			gui.notify({
+				heading: "Out of food!",
+				text: Math.ceil(Math.abs(this.food())/2)
+					+ " crew members starved to death.",
+				type: "danger"
+			});
+			this.crew(this.crew() - Math.ceil(Math.abs(this.food())/2));
+			this.food(0);
+			if (this.crew() <= 0) {
+				this.crew(0);
+				Crafty.scene('GameOver', false);
+			}
 		}
 	},
 
 	visitPort: function(port) {
+		this.food(this.food()+5);
 		port.collect();
 	},
 
