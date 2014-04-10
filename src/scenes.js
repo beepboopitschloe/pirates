@@ -34,17 +34,20 @@ Crafty.scene('Game', function() {
 		}
 	}
 
-	this.ports = 0;
 	var maxPorts = 5;
-	for (var x=1; x<Game.map_grid.width-1; x++) {
-		for (var y=1; y<Game.map_grid.height-1; y++) {
-			if (!this.occupied[x][y] && Math.random() < 0.02) {
+
+	while (Crafty('Port').length < maxPorts) {
+		var x = Math.floor(Math.random() * Game.map_grid.width);
+		var y = Math.floor(Math.random() * Game.map_grid.height);
+
+		if (this.occupied[x][y]) {
+			continue;
+		} else {
+			try {
 				Game.mapObjects[x][y].push(Crafty.e('Port').at(x, y));
 				this.occupied[x][y] = true;
-				this.ports++;
-				if (Crafty('Port').length >= maxPorts) {
-					break;
-				}
+			} catch(err) {
+				console.log(x, y);
 			}
 		}
 	}

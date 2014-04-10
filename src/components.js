@@ -173,7 +173,6 @@ Crafty.c('PlayerCharacter', {
 	init: function() {
 		this.requires('Actor, Keyboard, spr_player')
 			.bind('EnterFrame', this.update)
-			.bind('PortVisited', function() { console.log("visit") })
 			.bind('MoveFinished', this.finishMove);
 
 		this.updateStatus({
