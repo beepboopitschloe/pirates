@@ -3,8 +3,8 @@ Game = {
 		width: 24,
 		height: 16,
 		tile: {
-			width: 16,
-			height: 16,
+			width: 32,
+			height: 32,
 			margin: 0
 		}
 	},
@@ -53,10 +53,17 @@ Game = {
 		// start Crafty
 		Crafty.init(Game.width(), Game.height(), "cr-stage");
     	Crafty.background('rgb(125, 123, 249)');
+    	Crafty.viewport.scale(3);
 
-		Crafty.scene('Game');
+		Crafty.scene('Loading');
 	}
 }
+
+text_css = {
+	'font-size': '24px',
+	'font-family': 'Arial',
+	'color': 'white'
+};
 
 window.onload = function() {
 	Game.start();

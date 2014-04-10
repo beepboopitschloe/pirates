@@ -90,22 +90,19 @@ Crafty.c('Actor', {
 
 Crafty.c('Rock', {
 	init: function() {
-		this.requires('Actor, Color, Solid')
-			.color('rgb(80, 80, 80)');
+		this.requires('Actor, spr_rock, Solid');
 	}
 });
 
 Crafty.c('Island', {
 	init: function() {
-		this.requires('Actor, Color, Solid')
-			.color('rgb(20, 185, 40)');
+		this.requires('Actor, spr_island, Solid');
 	}
 });
 
 Crafty.c('Port', {
 	init: function() {
-    	this.requires('Actor, Color')
-    		.color('rgb(170, 125, 40)');
+    	this.requires('Actor, spr_port');
 
     	this.collected = false;
   	},
@@ -113,7 +110,8 @@ Crafty.c('Port', {
 	collect: function() {
 		if (!this.collected) {
 	  		this.collected = true;
-	  		this.color('rgb(100, 100, 100)');
+	  		//this.color('rgb(100, 100, 100)');
+	  		this.destroy();
 	  		Crafty.trigger('PortVisited', this);
 	  	}
 	}
@@ -121,10 +119,9 @@ Crafty.c('Port', {
 
 Crafty.c('PlayerCharacter', {
 	init: function() {
-		this.requires('Actor, Keyboard, Color')
+		this.requires('Actor, Keyboard, spr_player')
 			.bind('EnterFrame', this.update)
-			.bind('MoveFinished', this.checkSquare)
-			.color('rgb(20, 75, 40)');
+			.bind('MoveFinished', this.checkSquare);
 	},
 
 	update: function() {
@@ -142,6 +139,8 @@ Crafty.c('PlayerCharacter', {
 		} else if (this.isDown('D')) {
 			target.x = 1;
 			target.y = 0;
+		} else if (this.isDown('V')) {
+			Crafty.scene('Victory');
 		}
 
 		if (target.x !== undefined) {

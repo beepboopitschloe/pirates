@@ -11,8 +11,8 @@ Crafty.scene('Game', function() {
 	}
 
 	this.player = Crafty.e('PlayerCharacter').at(10, 10);
-	console.log("PLACED AT: " + this.player.at().x + ", " + this.player.at().y);
-	console.log("ACTUAL: " + this.player.x + ", " + this.player.y);
+	//console.log("PLACED AT: " + this.player.at().x + ", " + this.player.at().y);
+	//console.log("ACTUAL: " + this.player.x + ", " + this.player.y);
 	this.occupied[this.player.at().x][this.player.at().y] = true;
 		
 	for (var x=0; x<Game.map_grid.width; x++) {
@@ -39,7 +39,7 @@ Crafty.scene('Game', function() {
 				Game.mapObjects[x][y].push(Crafty.e('Port').at(x, y));
 				this.occupied[x][y] = true;
 				this.ports++;
-				if (Crafty('Ports').length >= maxPorts) {
+				if (Crafty('Port').length >= maxPorts) {
 					return;
 				}
 			}
@@ -48,7 +48,7 @@ Crafty.scene('Game', function() {
 
 	this.showVictory = this.bind('PortVisited', function() {
 		this.ports--;
-		if (this.ports <= 0) {
+		if (!Crafty('Port').length) {
 			Crafty.scene('Victory');
 		}
 	});
@@ -58,12 +58,34 @@ Crafty.scene('Game', function() {
 
 Crafty.scene('Victory', function() {
 	Crafty.e('2D, DOM, Text')
-		.attr({ x: 0, y: 0 })
-		.text('Victory!');
+		.attr({ x: 0, y: Game.height()/3, w: Game.width() })
+		.text('Victory! Victory! Victory!'
+				+ '<br /><br />'
+				+ 'Press any key to play again.')
+		.textFont({ size: '24px', family: 'Courier'})
+		.textColor('#FFFFFF', 1.0)
+		.css("text-align", "center");
 
 	this.restartGame = this.bind('KeyDown', function() {
 		Crafty.scene('Game');
 	});
 }, function() {
 	this.unbind('KeyDown', this.restartGame);
+});
+
+Crafty.scene('Loading', function() {
+	Crafty.e('2D, DOM, Text')
+		.text('Loading')
+		.attr({ x:0, y:Game.height()/2 - 24, w: Game.width() });
+
+	Crafty.load('[img/environment.gif]', function() {
+		Crafty.sprite(32, 'img/environment.gif', {
+			spr_rock: [0, 0],
+			spr_island: [1, 0],
+			spr_port: [0, 1],
+			spr_player: [1, 1]
+		})
+
+		Crafty.scene('Game');
+	});
 });
