@@ -14,7 +14,10 @@ Crafty.scene('Game', function() {
 	//console.log("PLACED AT: " + this.player.at().x + ", " + this.player.at().y);
 	//console.log("ACTUAL: " + this.player.x + ", " + this.player.y);
 	this.occupied[this.player.at().x][this.player.at().y] = true;
-		
+	
+	this.enemy = Crafty.e('Enemy').at(Game.map_grid.width-2, Game.map_grid.height-2);
+	this.occupied[this.enemy.at().x][this.enemy.at().y] = true;
+
 	for (var x=0; x<Game.map_grid.width; x++) {
 		for (var y=0; y<Game.map_grid.height; y++) {
 			var at_edge = x == 0 || x == Game.map_grid.width-1
@@ -49,19 +52,29 @@ Crafty.scene('Game', function() {
 	this.showVictory = this.bind('PortVisited', function() {
 		this.ports--;
 		if (!Crafty('Port').length) {
-			Crafty.scene('Victory');
+			Crafty.scene('Victory', true);
 		}
 	});
 }, function() {
 	this.unbind('VillageVisited', this.showVictory);
 });
 
-Crafty.scene('Victory', function() {
+Crafty.scene('GameOver', function(win) {
+	var gameOverText;
+
+	if (win) {
+		gameOverText = 'Victory! Victory! Victory!'
+				+ '<br /><br />'
+				+ 'Press any key to play again.'
+	} else {
+		gameOverText = 'You lost.'
+				+ '<br /><br />'
+				+ 'Press any key to play again.'
+	}
+
 	Crafty.e('2D, DOM, Text')
 		.attr({ x: 0, y: Game.height()/3, w: Game.width() })
-		.text('Victory! Victory! Victory!'
-				+ '<br /><br />'
-				+ 'Press any key to play again.')
+		.text(gameOverText)
 		.textFont({ size: '24px', family: 'Courier'})
 		.textColor('#FFFFFF', 1.0)
 		.css("text-align", "center");
