@@ -101,14 +101,18 @@ Crafty.scene('Loading', function() {
 		.text('Loading')
 		.attr({ x:0, y:Game.height()/2 - 24, w: Game.width() });
 
-	Crafty.load('[img/environment.gif]', function() {
+	Crafty.load(['img/environment.gif', 'img/playerFighter.png'], function() {
 		Crafty.sprite(32, 'img/environment.gif', {
 			spr_rock: [0, 0],
 			spr_island: [1, 0],
 			spr_port: [0, 1],
 			spr_player: [1, 1]
-		})
+		});
 
-		Crafty.scene('Game');
+		Crafty.sprite(32, 'img/playerFighter.png', {
+			spr_fighter_tmp: [0, 0]
+		}, 0, 2);
+
+		Crafty.scene('Duel');
 	});
 });

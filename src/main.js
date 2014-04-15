@@ -69,7 +69,7 @@ Game = {
     	// set up notification feed
     	gui.init();
 
-		Crafty.scene('Duel');
+		Crafty.scene('Loading');
 	}
 }
 
