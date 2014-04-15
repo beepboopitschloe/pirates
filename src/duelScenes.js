@@ -1,5 +1,5 @@
 Crafty.scene('Duel', function() {
-	var net = new NeuralNet();
+	// var layer = new NeuronLayer(3, 3);
 
 	var fighter = Crafty.e('Fighter');
 }, function() {
