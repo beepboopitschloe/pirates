@@ -232,7 +232,7 @@ Crafty.c('Island', {
 Crafty.c('Grass', {
 	init: function() {
 		this.requires('MapObject, Color')
-			.color('rgb(100, 255, 100)');
+			.color('rgb(100, 218, 100)');
 	}
 });
 
@@ -359,8 +359,6 @@ Crafty.c('PlayerCharacter', {
 
 	checkSquare: function() {
 		var objArray = Game.mapObjects[this.at().x][this.at().y];
-
-		console.log(objArray);
 
 		for (var i=0; i<objArray.length; i++) {
 			if (objArray[i].has('Port')) {
