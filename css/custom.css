@@ -23,3 +23,16 @@ body, html {
 #controls {
 	margin-bottom: 10px;
 }
+
+#world-map-container {
+	margin: auto;
+}
+
+.map-cell {
+	margin: 0px;
+	float: left;
+	width: 32px;
+	height: 32px;
+	background-color: green;
+	text-align: center;
+}

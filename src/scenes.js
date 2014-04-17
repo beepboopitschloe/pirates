@@ -1,5 +1,5 @@
 Crafty.scene('Game', function() {
-	World.generate();
+	World.init();
 
 	Game.player = Crafty.e('PlayerCharacter').at(0, 0);
 	Crafty.viewport.follow(Game.player, 0, 0);

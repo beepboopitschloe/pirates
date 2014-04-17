@@ -11,8 +11,8 @@ Array.prototype.remove = function() {
 
 Game = {
 	map_grid: {
-		width: 30,
-		height: 30,
+		width: World.worldWidth * World.chunkWidth,
+		height: World.worldHeight * World.chunkHeight,
 		tile: {
 			width: 32,
 			height: 32,
@@ -58,19 +58,22 @@ Game = {
 	},
 
 	neighbors: function(x, y, includeDiagonals) {
-		var neighbors = {};
+		var neighbors = { };
 
-		// console.log(x,y);
-		neighbors.up = this.mapObjects[x][y-1];
-		neighbors.down = this.mapObjects[x][y+1];
-		neighbors.left = this.mapObjects[x-1][y];
-		neighbors.right = this.mapObjects[x+1][y];
+		try {
+			neighbors.up = this.mapObjects[x][y-1]? this.mapObjects[x][y-1] : [];
+			neighbors.down = this.mapObjects[x][y+1]? this.mapObjects[x][y+1] : [];
+			neighbors.left = this.mapObjects[x-1][y]? this.mapObjects[x-1][y] : [];
+			neighbors.right = this.mapObjects[x+1][y]? this.mapObjects[x+1][y] : [];
 
-		if (includeDiagonals) {
-			neighbors.upLeft = this.mapObjects[x-1][y-1];
-			neighbors.upRight = this.mapObjects[x+1][y-1];
-			neighbors.downLeft = this.mapObjects[x-1][y+1];
-			neighbors.downRight = this.mapObjects[x+1][y+1];
+			if (includeDiagonals) {
+				neighbors.upLeft = this.mapObjects[x-1][y-1]? this.mapObjects[x-1][y-1] : [];
+				neighbors.upRight = this.mapObjects[x+1][y-1]? this.mapObjects[x+1][y-1] : [];
+				neighbors.downLeft = this.mapObjects[x-1][y+1]? this.mapObjects[x-1][y+1] : [];
+				neighbors.downRight = this.mapObjects[x+1][y+1]? this.mapObjects[x+1][y+1] : [];
+			}
+		} catch(e) {
+			console.log("neighbors error", x, y);
 		}
 
 		// for (var cx = x-1; cx <= x+1; cx++) {
@@ -100,6 +103,8 @@ Game = {
 		var neighbors = this.neighbors(x, y, includeDiagonals);
 
 		for (key in neighbors) {
+			if (!neighbors[key])
+				console.log(neighbors, key);
 			if (neighbors[key].length == 0) {
 				func('null', key, 0);
 				continue;
@@ -146,11 +151,11 @@ Game = {
 	start: function() {
 		// start Crafty
 		Crafty.init(Game.width(), Game.height(), "cr-stage");
+		// Crafty.timer.FPS(32);
     	Crafty.background('rgb(125, 123, 249)');
     	//Crafty.viewport.scale(3);
     	Crafty.viewport.width = this.viewportWidth();
     	Crafty.viewport.height = this.viewportHeight();
-		console.log(Crafty.viewport.width, Crafty.viewport.height);
 
     	// set up notification feed
     	gui.init();
@@ -169,6 +174,6 @@ window.onload = function() {
 	Game.start();
 
 	$("#map-btn").on('click', function(e) {
-		Crafty.scene('Map');
+		World.showMapModal();
 	});
 }

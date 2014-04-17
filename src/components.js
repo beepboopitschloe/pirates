@@ -182,14 +182,14 @@ Crafty.c('Island', {
 
 Crafty.c('Grass', {
 	init: function() {
-		this.requires('MapObject, Color')
+		this.requires('MapObject, Color, Solid')
 			.color('rgb(100, 218, 100)');
 	}
 });
 
 Crafty.c('Sand', {
 	init: function() {
-		this.requires('MapObject, Color')
+		this.requires('MapObject, Color, Solid')
 			.color('#EDE291');
 	}
 });
@@ -214,8 +214,8 @@ Crafty.c('Actor', {
 	init: function() {
 		this.requires('MapObject, Tween');
 
-		this.attr({
-			speed: 200,
+		this.attr({	
+			speed: 100,
 			moveQueue: {
 				full: false,
 				target: null
@@ -429,7 +429,7 @@ Crafty.c('PlayerCharacter', {
 	},
 
 	eatFood: function() {
-		this.food(this.food() - this.crew()/2);
+		this.food(this.food() + this.crew()/2);
 
 		if (this.food() <= 0) {
 			gui.notify({
