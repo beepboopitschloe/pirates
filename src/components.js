@@ -168,6 +168,48 @@ Crafty.c('MapQuad', {
 	}
 });
 
+Crafty.c('Rock', {
+	init: function() {
+		this.requires('MapObject, spr_rock, Solid');
+	}
+});
+
+Crafty.c('Island', {
+	init: function() {
+		this.requires('MapObject, spr_island, Solid');
+	}
+});
+
+Crafty.c('Grass', {
+	init: function() {
+		this.requires('MapObject, Color')
+			.color('rgb(100, 218, 100)');
+	}
+});
+
+Crafty.c('Sand', {
+	init: function() {
+		this.requires('MapObject, Color')
+			.color('#EDE291');
+	}
+});
+
+Crafty.c('Port', {
+	init: function() {
+    	this.requires('Actor, spr_port');
+
+    	this.collected = false;
+  	},
+ 
+	collect: function() {
+		if (!this.collected) {
+	  		this.collected = true;
+	  		this.destroy();
+	  		Crafty.trigger('PortVisited', this);
+	  	}
+	}
+});
+
 Crafty.c('Actor', {
 	init: function() {
 		this.requires('MapObject, Tween');
@@ -217,47 +259,6 @@ Crafty.c('Actor', {
 	},
 });
 
-Crafty.c('Rock', {
-	init: function() {
-		this.requires('MapObject, spr_rock, Solid');
-	}
-});
-
-Crafty.c('Island', {
-	init: function() {
-		this.requires('MapObject, spr_island, Solid');
-	}
-});
-
-Crafty.c('Grass', {
-	init: function() {
-		this.requires('MapObject, Color, Solid')
-			.color('rgb(100, 218, 100)');
-	}
-});
-
-Crafty.c('Sand', {
-	init: function() {
-		this.requires('MapObject, Color, Solid')
-			.color('#EDE291');
-	}
-});
-
-Crafty.c('Port', {
-	init: function() {
-    	this.requires('Actor, spr_port');
-
-    	this.collected = false;
-  	},
- 
-	collect: function() {
-		if (!this.collected) {
-	  		this.collected = true;
-	  		this.destroy();
-	  		Crafty.trigger('PortVisited', this);
-	  	}
-	}
-});
 
 Crafty.c('Enemy', {
 	init: function() {
@@ -337,12 +338,15 @@ Crafty.c('PlayerCharacter', {
 			target.y = 0;
 		} else if (this.isDown('V')) {
 			Crafty.scene('GameOver', true);
+		} else if (this.isDown('L')) {
+			Crafty.scene('GameOver', false);
 		}
 
 		if (target.x !== undefined) {
 			if (this.canMove) {
 				this.eatFood();
 
+				Crafty.trigger('PlayerStartMove');
 				this.tweenMove(target.x, target.y);
 			} else if (this.moveQueue.target
 						&& this.moveQueue.target.x != target.x
@@ -355,6 +359,7 @@ Crafty.c('PlayerCharacter', {
 
 	finishMove: function() {
 		this.checkSquare();
+		Crafty.trigger('PlayerFinishMove');
 	},
 
 	checkSquare: function() {

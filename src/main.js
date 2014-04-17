@@ -167,4 +167,8 @@ text_css = {
 
 window.onload = function() {
 	Game.start();
+
+	$("#map-btn").on('click', function(e) {
+		Crafty.scene('Map');
+	});
 }
