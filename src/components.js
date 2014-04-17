@@ -231,14 +231,14 @@ Crafty.c('Island', {
 
 Crafty.c('Grass', {
 	init: function() {
-		this.requires('MapObject, Color')
+		this.requires('MapObject, Color, Solid')
 			.color('rgb(100, 218, 100)');
 	}
 });
 
 Crafty.c('Sand', {
 	init: function() {
-		this.requires('MapObject, Color')
+		this.requires('MapObject, Color, Solid')
 			.color('#EDE291');
 	}
 });

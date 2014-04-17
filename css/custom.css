@@ -2,7 +2,8 @@ body, html {
 	margin:0;
 	padding: 0;
 	overflow:hidden;
-	background-color:rgb(122, 219, 219);
+	background-color:black;
+	/*background-color:rgb(122, 219, 219);*/
 }
 
 #cr-stage {

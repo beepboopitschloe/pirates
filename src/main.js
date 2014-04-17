@@ -11,8 +11,8 @@ Array.prototype.remove = function() {
 
 Game = {
 	map_grid: {
-		width: 24,
-		height: 16,
+		width: 30,
+		height: 30,
 		tile: {
 			width: 32,
 			height: 32,
@@ -28,6 +28,14 @@ Game = {
 	height: function() {
 		return this.map_grid.tile.margin + (this.map_grid.height * (this.map_grid.tile.height
 					+ this.map_grid.tile.margin));
+	},
+
+	viewportWidth: function() {
+		return 640;
+	},
+
+	viewportHeight: function() {
+		return 480;
 	},
 
 	findX: function(xIn) {
@@ -121,6 +129,10 @@ Game = {
 	},
 
 	validMove: function(x, y) {
+		if (x < 0 || y < 0 || x >= this.map_grid.width || y >= this.map_grid.height) {
+			return false;
+		}
+
 		var objArray = this.mapObjects[x][y];
 
 		for (var i=0; i<objArray.length; i++) {
@@ -136,6 +148,9 @@ Game = {
 		Crafty.init(Game.width(), Game.height(), "cr-stage");
     	Crafty.background('rgb(125, 123, 249)');
     	//Crafty.viewport.scale(3);
+    	Crafty.viewport.width = this.viewportWidth();
+    	Crafty.viewport.height = this.viewportHeight();
+		console.log(Crafty.viewport.width, Crafty.viewport.height);
 
     	// set up notification feed
     	gui.init();

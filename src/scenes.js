@@ -160,6 +160,7 @@ Crafty.scene('Game', function() {
 	generateMap();
 
 	this.player = Crafty.e('PlayerCharacter').at(0, 0);
+	Crafty.viewport.follow(this.player, 10, 1000);
 	// //console.log("PLACED AT: " + this.player.at().x + ", " + this.player.at().y);
 	// //console.log("ACTUAL: " + this.player.x + ", " + this.player.y);
 	// this.occupied[this.player.at().x][this.player.at().y] = true;
