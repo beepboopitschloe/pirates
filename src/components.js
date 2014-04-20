@@ -421,6 +421,8 @@ Crafty.c('PlayerCharacter', {
 		} else if (this.isDown('D')) {
 			target.x = 1;
 			target.y = 0;
+		} else if (this.isDown('T')) {
+			Crafty.scene('Duel', Crafty.e('Enemy'));
 		} else if (this.isDown('V')) {
 			Crafty.scene('GameOver', true);
 		} else if (this.isDown('L')) {
@@ -554,13 +556,7 @@ Crafty.c('PlayerCharacter', {
 	},
 
 	touchEnemy: function(enemy) {
-		if (Math.random() > 0.5) {
-			this.destroy();
-			Crafty.scene('GameOver', false);
-		} else {
-			enemy.destroy();
-			Crafty.scene('GameOver', true);
-		}
+		Crafty.scene('Duel', enemy);
 	},
 
 	// Registers a stop-movement function to be called when

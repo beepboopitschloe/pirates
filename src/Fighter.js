@@ -1,4 +1,4 @@
-Crafty.c('FighterBrainAI', {
+Crafty.c('FighterBrainNeural', {
 	init: function() {
 		this.requires('FighterCore, Keyboard')
 			.bind('KeyDown', this.keys)
@@ -85,10 +85,55 @@ Crafty.c('FighterBrainAI', {
 	}
 });
 
+Crafty.c('FighterBrainRandom', {
+	init: function() {
+		this.requires('FighterCore')
+			.bind('FighterAction', this.respond);
+
+		this.speed = 500;
+	},
+
+	respond: function(data) {
+		var fighter = data.fighter;
+
+		if (fighter == this) {
+			return;
+		} else {
+			this.delay(this.update, this.speed, 0);
+		}
+	},
+
+	getAction: function() {
+		var action = "";
+
+		if (Math.random() > .5) {
+			action = 'strikeLow';
+		} else {
+			action = 'strikeMid';
+		}
+
+		console.log(action);
+		return action;
+	}
+});
+
 Crafty.c('FighterBrainPlayer', {
 	init: function() {
 		this.requires('FighterCore, Keyboard')
-			.bind('KeyDown', this.update);
+			.bind('KeyDown', this.handleKeys);
+
+		this.speed = 250;
+		this.canAct = true;
+	},
+
+	handleKeys: function() {
+		if (this.canAct) {
+			this.update();
+			this.canAct = false;
+			this.delay(function() {
+				this.canAct = true;
+			}, this.speed, 0);
+		}
 	},
 
 	getAction: function() {
@@ -104,13 +149,17 @@ Crafty.c('FighterBrainPlayer', {
 
 Crafty.c('FighterCore', {
 	init: function() {
-		this.requires('2D, Canvas, spr_fighter_tmp, SpriteAnimation')
+		this.requires('2D, Canvas, spr_fighter_tmp, SpriteAnimation, Tween, Delay')
 			.reel('Idle', 200, 0, 0, 1)
 			.reel('Punch', 300, 0, 1, 2)
 			.reel('Kick', 300, 3, 1, 2)
 			.reel('OnHit', 200, 0, 3, 1)
 			.reel('Die', 200, 3, 3, 1)
 			.bind('AnimationEnd', this.animationEnd);
+
+		this.speed = 100; // ms between actions
+
+		this.facing = 1; // -1 left, 1 right
 
 		this.actions = [
 			'strikeHigh',
@@ -149,6 +198,20 @@ Crafty.c('FighterCore', {
 		this.animate('Idle', this.animationSpeed, 1);
 	},
 
+	popForward: function() {
+		this.tween({
+			x: this.x+32*this.facing
+		}, 50);
+
+		this.one('TweenEnd', this.popBackward);
+	},
+
+	popBackward: function() {
+		this.tween({
+			x: this.x+32*this.facing*-1
+		}, 50);
+	},
+
 	update: function() {
 		if (this.getAction) {
 			var nextAction = this.getAction();
@@ -162,9 +225,11 @@ Crafty.c('FighterCore', {
 				break;
 			case 'strikeMid':
 				this.animate('Punch');
+				this.popForward();
 				break;
 			case 'strikeLow':
 				this.animate('Kick');
+				this.popForward();
 				break;
 			case 'parryHigh':
 

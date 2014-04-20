@@ -145,11 +145,9 @@ Crafty.scene('Loading', function() {
 		.text('Loading')
 		.attr({ x:0, y:Game.height()/2 - 24, w: Game.width() });
 
-<<<<<<< HEAD
-	Crafty.load(['img/environment.gif', 'img/playerFighter.png'], function() {
-=======
-	Crafty.load('[img/environment.gif, img/oceanTile.png]', function() {
->>>>>>> master
+	Crafty.load(['img/environment.gif',
+			'img/playerFighter.png',
+			'img/oceanTile.png'], function() {
 		Crafty.sprite(32, 'img/environment.gif', {
 			spr_rock: [0, 0],
 			spr_island: [1, 0],
@@ -161,6 +159,6 @@ Crafty.scene('Loading', function() {
 			spr_fighter_tmp: [0, 0]
 		}, 0, 2);
 
-		Crafty.scene('Duel');
+		Crafty.scene('Game');
 	});
 });

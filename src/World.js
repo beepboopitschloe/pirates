@@ -55,7 +55,7 @@ World = {
 	chunkHeight: 24,
 
 	numIslands: 0,
-	inhabitedChance: 1/5,
+	inhabitedChance: 1,
 	islandToOceanRatio: 1/10,
 	islands: [],
 	ports: [],
