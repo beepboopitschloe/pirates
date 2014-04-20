@@ -55,7 +55,7 @@ World = {
 	chunkHeight: 24,
 
 	numIslands: 0,
-	inhabitedChance: 1/10,
+	inhabitedChance: 1/5,
 	islandToOceanRatio: 1/10,
 	islands: [],
 	ports: [],
@@ -299,7 +299,7 @@ World = {
 		}
 
 		// decide whether or not this island should be inhabited
-		if (Math.random() > this.inhabitedChance) {
+		if (Math.random() < this.inhabitedChance) {
 			// select a random inhabitable tile
 			var tile = inhabitableTiles[Math.floor(Math.random() * inhabitableTiles.length)];
 
