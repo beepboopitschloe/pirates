@@ -40,12 +40,12 @@ World = {
 	chunkHeight: 24,
 
 	numIslands: 0,
-	islandToOceanRatio: .1,
+	islandToOceanRatio: 1/10,
 	islands: [],
 
 	init: function() {
 		for (var x=0; x<this.worldWidth; x++) {
-			this.worldMap[x] = new Array(this.worldHeight);
+			this.worldMap[x] = new Array(this.worldWidth);
 			for (var y=0; y<this.worldHeight; y++) {
 				this.worldMap[x][y] = null;
 			}
@@ -66,8 +66,8 @@ World = {
 
 		console.log("player in chunk", playerChunkX, playerChunkY);
 
-		for (var x=0; x<this.worldWidth; x++) {
-			for (var y=0; y<this.worldHeight; y++) {
+		for (var y=0; y<this.worldHeight; y++) {
+			for (var x=0; x<this.worldWidth; x++) {
 				var innerHtml = '';
 
 				if (x == playerChunkX && y == playerChunkY) {
@@ -278,6 +278,17 @@ World = {
 			this.generateIsland(x,y);
 		}
 
-		console.log(this.worldMap);
+		// add player
+		var playerChunkX = Math.floor(Math.random() * this.worldWidth);
+		var playerChunkY = Math.floor(Math.random() * this.worldHeight);
+		var placeX = 0; var placeY = 0;
+
+		do {
+			placeX = Math.floor(Math.random() * this.chunkWidth) + (playerChunkX * this.chunkWidth);
+			placeY = Math.floor(Math.random() * this.chunkHeight) + (playerChunkY * this.chunkHeight);
+		} while (Game.mapObjects[placeX][placeY].has);
+
+		Game.player = Crafty.e('PlayerCharacter').at(placeX, placeY);
+		Crafty.viewport.follow(Game.player, 0, 0);
 	}
 }

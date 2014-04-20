@@ -24,15 +24,23 @@ body, html {
 	margin-bottom: 10px;
 }
 
+body .modal {
+	left: -512px;
+}
+
+body .modal-content {
+    /* new custom width */
+    width: 1024px;
+}
+
 #world-map-container {
-	margin: auto;
 }
 
 .map-cell {
 	margin: 0px;
 	float: left;
-	width: 32px;
-	height: 32px;
+	width: 64px;
+	height: 64px;
 	background-color: green;
 	text-align: center;
 }

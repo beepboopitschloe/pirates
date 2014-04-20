@@ -1,9 +1,6 @@
 Crafty.scene('Game', function() {
 	World.init();
 
-	Game.player = Crafty.e('PlayerCharacter').at(0, 0);
-	Crafty.viewport.follow(Game.player, 0, 0);
-
 	this.showVictory = this.bind('PortVisited', function() {
 		if (!Crafty('Port').length) {
 			Crafty.scene('GameOver', true);
