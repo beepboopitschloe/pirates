@@ -1,3 +1,83 @@
+// Parallax component derived from code by coder78
+// http://www.arg3.com/blog/2012/11/17/crafting-a-game-with-craftyjs
+Crafty.c("Parallax", {
+    init: function() {
+        this.requires("2D, Canvas, Image")
+        	.attr({
+        		w: Crafty.viewport.width + Game.map_grid.tile.width*2,
+        		h: Crafty.viewport.height + Game.map_grid.tile.height*2,
+        		z: -15
+        	})
+        	.image('img/oceanTile.png', 'repeat');
+
+        this.speed = 4;
+    },
+
+    setImage: function(img) {
+    	this.image(img, 'repeat');
+    },
+
+    scrollOn: function(event) {
+    	this.bind(event, this.scroll);
+    },
+
+    setSpeed: function(speed) {
+        this.speed = speed;
+        return this;
+    },
+
+    autoScroll: function() {
+        this.bind("EnterFrame", function() {
+            this.scroll();
+        });
+        this.autoScrolling = true;
+    },
+
+    getSpeed: function() {
+        return this.speed;
+    },
+
+    scroll: function() {
+    	this.previousX = this.x;
+    	this.previousY = this.y;
+
+    	this.x = -Crafty.viewport.x - Game.map_grid.tile.width;
+    	this.y = -Crafty.viewport.y - Game.map_grid.tile.height;
+
+    	// check if moving left or right
+    	if (this.x > this.previousX) {
+    		console.log('moving right');
+    		this.x += this.speed + Game.map_grid.tile.width/2;
+    	} else if (this.x < this.previousX) {
+    		this.x -= this.speed;
+    	}
+
+    	// check if moving up or down
+    	if (this.y > this.previousY) {
+    		this.y += this.speed;
+    	} else if (this.y < this.previousY) {
+    		this.y -= this.speed;
+    	}
+
+    	// check to see if looping
+        if (this.x + this.w - Game.map_grid.tile.width < -Crafty.viewport.x) {
+        	console.log('falling behind on left');
+            this.x = Crafty.viewport.width + -Crafty.viewport.x;
+        }
+        else if (this.x > Crafty.viewport.width + -Crafty.viewport.x) {
+        	console.log('getting ahead on right');
+            this.x = -this.w;
+        }
+
+        if (this.y + this.h - Game.map_grid.tile.height < -Crafty.viewport.y) {
+            this.y = Crafty.viewport.height + -Crafty.viewport.y;
+        }
+        else if (this.y > Crafty.viewport.height + -Crafty.viewport.y) {
+            this.y = -this.h;
+        }
+    }
+});
+
 Crafty.c('Grid', {
 	init: function() {
 		this.attr({
@@ -101,8 +181,11 @@ Crafty.c('MapQuad', {
 		toCreate.downLeft = obj.downLeft? obj.downLeft : this.quadrants.downLeft;
 		toCreate.downRight = obj.downRight? obj.downRight : this.quadrants.downRight;
 
+		this.removeComponent('Solid');
 		for (key in toCreate) {
 			this.quadrants[key] = Crafty.e(toCreate[key]);
+			if (!this.has('Solid') && this.quadrants[key].has('Solid'))
+				this.addComponent('Solid');
 		}
 
 		return this.enforceQuadrantRestrictions();
@@ -314,6 +397,8 @@ Crafty.c('PlayerCharacter', {
 			.bind('EnterFrame', this.update)
 			.bind('MoveFinished', this.finishMove);
 
+		this.controlsEnabled = true;
+
 		this.updateStatus({
 			money: 0,
 			food: 1000,
@@ -342,7 +427,7 @@ Crafty.c('PlayerCharacter', {
 			Crafty.scene('GameOver', false);
 		}
 
-		if (target.x !== undefined) {
+		if (target.x !== undefined && this.controlsEnabled) {
 			if (this.canMove) {
 				this.eatFood();
 
@@ -372,6 +457,22 @@ Crafty.c('PlayerCharacter', {
 			else if (objArray[i].has('Enemy')) {
 				this.touchEnemy(objArray[i]);
 			}
+		}
+	},
+
+	enableControls: function() {
+		this.controlsEnabled = true;
+	},
+
+	disableControls: function() {
+		this.controlsEnabled = false;
+	},
+
+	toggleControls: function() {
+		if (this.controlsEnabled) {
+			this.controlsEnabled = false;
+		} else {
+			this.controlsEnabled = true;
 		}
 	},
 

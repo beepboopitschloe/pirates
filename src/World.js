@@ -40,8 +40,10 @@ World = {
 	chunkHeight: 24,
 
 	numIslands: 0,
+	inhabitedChance: 1/10,
 	islandToOceanRatio: 1/10,
 	islands: [],
+	ports: [],
 
 	mapModal: $('#world-map-modal'),
 	mapModalOpen: false,
@@ -110,7 +112,7 @@ World = {
 		var sandTiles = [];
 		var shallowWaterTiles = [];
 
-		var spirals = Math.floor(Math.random() * 3) + 1; // 1-4 spirals
+		var spirals = Math.floor(Math.random() * 2) + 2; // 2-4 spirals
 
 		var islandBaseWidth = Math.floor(Math.random() * this.chunkWidth/2);
 		var islandBaseHeight = Math.floor(Math.random() * this.chunkHeight/2);
@@ -206,9 +208,12 @@ World = {
 			endY++;
 		}
 
+		var inhabitableTiles = [];
+
 		// mark all land tiles touching water to be sand
 		for (var i = 0; i < grassTiles.length; i++) {
 			var touchingWater = false;
+			var numSand = 0;
 
 			var quads = {
 				upLeft: 'Grass',
@@ -223,41 +228,66 @@ World = {
 					switch (key) {
 						case 'upLeft':
 							quads.upLeft = 'Sand';
+							numSand++;
 							break;
 						case 'up':
 							quads.upLeft = 'Sand';
 							quads.upRight = 'Sand';
+							numSand += 2;
 							break;
 						case 'upRight':
 							quads.upRight = 'Sand';
+							numSand++;
 							break;
 						case 'left':
 							quads.upLeft = 'Sand';
 							quads.downLeft = 'Sand';
+							numSand += 2;
 							break;
 						case 'right':
 							quads.upRight = 'Sand';
 							quads.downRight = 'Sand';
+							numSand += 2;
 							break;
 						case 'downLeft':
 							quads.downLeft = 'Sand';
+							numSand++;
 							break;
 						case 'down':
 							quads.downLeft = 'Sand';
 							quads.downRight = 'Sand';
+							numSand += 2;
 							break;
 						case 'downRight':
 							quads.downRight = 'Sand';
+							numSand++;
 							break;
 					}
 				}
 			}, true);
 
-			Game.addObject(Crafty.e('MapQuad')
+			var newQuad = Crafty.e('MapQuad')
 					.at(grassTiles[i].at().x, grassTiles[i].at().y)
-					.setQuadrants(quads));
+					.setQuadrants(quads);
+
+			Game.addObject(newQuad);
 
 			grassTiles[i].destroy();
+
+			// decide if this tile is inhabitable
+			if (numSand > 1) {
+				inhabitableTiles.push(newQuad);
+			}
+		}
+
+		// decide whether or not this island should be inhabited
+		if (Math.random() > this.inhabitedChance) {
+			// select a random inhabitable tile
+			var tile = inhabitableTiles[Math.floor(Math.random() * inhabitableTiles.length)];
+
+			var newPort = Crafty.e('Port').at(tile.at().x, tile.at().y);
+			this.ports.push(newPort);
+			Game.addObject(newPort);
 		}
 
 		// now stuff all this data into an island and add it to the map
@@ -293,14 +323,15 @@ World = {
 		}
 
 		// add player
-		var playerChunkX = Math.floor(Math.random() * this.worldWidth);
-		var playerChunkY = Math.floor(Math.random() * this.worldHeight);
-		var placeX = 0; var placeY = 0;
+		var startPort = this.ports[Math.floor(Math.random() * this.ports.length)];
+		var placeX = 0; var placeY = 0; var distance = 2;
 
 		do {
-			placeX = Math.floor(Math.random() * this.chunkWidth) + (playerChunkX * this.chunkWidth);
-			placeY = Math.floor(Math.random() * this.chunkHeight) + (playerChunkY * this.chunkHeight);
-		} while (Game.mapObjects[placeX][placeY].has);
+			console.log('loop', distance);
+			placeX = Math.floor(Math.random() * distance) - distance/2 + startPort.at().x;
+			placeY = Math.floor(Math.random() * distance) - distance/2 + startPort.at().y;
+			distance++;
+		} while (Game.mapObjects[placeX][placeY].has && Game.mapObjects[placeX][placeY].has('Solid'));
 
 		Game.player = Crafty.e('PlayerCharacter').at(placeX, placeY);
 		Crafty.viewport.follow(Game.player, 0, 0);

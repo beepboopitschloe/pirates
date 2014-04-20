@@ -140,12 +140,16 @@ Game = {
 
 		var objArray = this.mapObjects[x][y];
 
+		var solid = false; var port = false;
+
 		for (var i=0; i<objArray.length; i++) {
 			if (objArray[i].has('Solid'))
-				return false;
+				solid = true;
+			if (objArray[i].has('Port'))
+				port = true;
 		}
 
-		return true;
+		return (!solid || port);
 	},
 
 	start: function() {

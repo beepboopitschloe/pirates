@@ -1,6 +1,13 @@
 Crafty.scene('Game', function() {
 	World.init();
 
+	// this.parallax = Crafty.e('Parallax').attr({
+	// 	x: -Crafty.viewport.x - Game.map_grid.tile.width,
+	// 	y: -Crafty.viewport.y - Game.map_grid.tile.height
+	// });
+	// this.parallax.scrollOn('ViewportScroll');
+	// console.log(this.parallax);
+
 	this.showVictory = this.bind('PortVisited', function() {
 		if (!Crafty('Port').length) {
 			Crafty.scene('GameOver', true);
@@ -101,7 +108,7 @@ Crafty.scene('Loading', function() {
 		.text('Loading')
 		.attr({ x:0, y:Game.height()/2 - 24, w: Game.width() });
 
-	Crafty.load('[img/environment.gif]', function() {
+	Crafty.load('[img/environment.gif, img/oceanTile.png]', function() {
 		Crafty.sprite(32, 'img/environment.gif', {
 			spr_rock: [0, 0],
 			spr_island: [1, 0],
