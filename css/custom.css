@@ -12,6 +12,8 @@ body, html {
 }
 
 #notifications {
+	width: 100px;
+	height: 100px;
 	margin: 5px;
 	overflow-y: scroll;
 }
