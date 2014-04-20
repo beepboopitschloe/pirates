@@ -42,14 +42,13 @@ gui = {
 	},
 
 	init: function() {
-    	this.container.css("width", Game.width()/2);
-    	this.container.css("height", Game.height());
+    	this.container.css("width", Game.viewportWidth()/3*2);
+    	this.container.css("height", Game.viewportHeight());
 
 		$('#dismiss-all', controls).click(function(t) {
 			return function(e) {
 				$('#dismiss-all', controls).blur();
 				$('.alert', t.container).alert('close');
-
 			}
 		}(this));
 	}
