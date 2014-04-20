@@ -2,7 +2,8 @@ body, html {
 	margin:0;
 	padding: 0;
 	overflow:hidden;
-	background-color:rgb(122, 219, 219);
+	background-color:black;
+	/*background-color:rgb(122, 219, 219);*/
 }
 
 #cr-stage {
@@ -21,4 +22,25 @@ body, html {
 
 #controls {
 	margin-bottom: 10px;
+}
+
+body .modal {
+	left: -512px;
+}
+
+body .modal-content {
+    /* new custom width */
+    width: 1024px;
+}
+
+#world-map-container {
+}
+
+.map-cell {
+	margin: 0px;
+	float: left;
+	width: 64px;
+	height: 64px;
+	background-color: green;
+	text-align: center;
 }

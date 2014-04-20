@@ -1,53 +1,12 @@
 Crafty.scene('Game', function() {
-	this.occupied = new Array(Game.map_grid.width);
-	Game.mapObjects = new Array(Game.map_grid.width);
-	for (var i=0; i<Game.map_grid.width; i++) {
-		this.occupied[i] = new Array(Game.map_grid.height);
-		Game.mapObjects[i] = new Array(Game.map_grid.height);
-		for (var k=0; k<Game.map_grid.height; k++) {
-			this.occupied[i][k] = false;
-			Game.mapObjects[i][k] = [];
-		}
-	}
+	World.init();
 
-	this.player = Crafty.e('PlayerCharacter').at(10, 10);
-	//console.log("PLACED AT: " + this.player.at().x + ", " + this.player.at().y);
-	//console.log("ACTUAL: " + this.player.x + ", " + this.player.y);
-	this.occupied[this.player.at().x][this.player.at().y] = true;
-	
-	this.enemy = Crafty.e('Enemy').at(Game.map_grid.width-2, Game.map_grid.height-2);
-	this.occupied[this.enemy.at().x][this.enemy.at().y] = true;
-
-	for (var x=0; x<Game.map_grid.width; x++) {
-		for (var y=0; y<Game.map_grid.height; y++) {
-			var at_edge = x == 0 || x == Game.map_grid.width-1
-				|| y == 0 || y == Game.map_grid.height-1;
-
-			if (at_edge) {
-				Game.mapObjects[x][y].push(Crafty.e('Rock').at(x, y).toggleMargin());
-				this.occupied[x][y] = true;
-			} else if (!this.occupied[x][y] && Math.random() < 0.06) {
-				// Place a bush entity at the current tile
-				Game.mapObjects[x][y].push(Crafty.e('Island').at(x, y));
-				this.occupied[x][y] = true;
-			}
-		}
-	}
-
-	this.ports = 0;
-	var maxPorts = 5;
-	for (var x=1; x<Game.map_grid.width-1; x++) {
-		for (var y=1; y<Game.map_grid.height-1; y++) {
-			if (!this.occupied[x][y] && Math.random() < 0.02) {
-				Game.mapObjects[x][y].push(Crafty.e('Port').at(x, y));
-				this.occupied[x][y] = true;
-				this.ports++;
-				if (Crafty('Port').length >= maxPorts) {
-					break;
-				}
-			}
-		}
-	}
+	// this.parallax = Crafty.e('Parallax').attr({
+	// 	x: -Crafty.viewport.x - Game.map_grid.tile.width,
+	// 	y: -Crafty.viewport.y - Game.map_grid.tile.height
+	// });
+	// this.parallax.scrollOn('ViewportScroll');
+	// console.log(this.parallax);
 
 	this.showVictory = this.bind('PortVisited', function() {
 		if (!Crafty('Port').length) {
@@ -58,8 +17,55 @@ Crafty.scene('Game', function() {
 			});
 		}
 	});
+
+	this.showWorldMap = this.bind('KeyDown', function(e) {
+		if (String.fromCharCode(e.keyCode) == 'M') {
+			World.toggleMapModal();
+		}
+	})
+
+	// this.cameraControl = this.bind('PlayerStartMove', function() {
+	// 	var viewportLeft = -Crafty.viewport.x;
+	// 	var viewportRight = (-Crafty.viewport.x) + (Crafty.viewport.width/Crafty.viewport._scale);
+	// 	var viewportTop = -Crafty.viewport.y;
+	// 	var viewportBottom = (-Crafty.viewport.y) + (Crafty.viewport.height/Crafty.viewport._scale);
+
+	// 	var minX = viewportLeft + ((Crafty.viewport.width/Crafty.viewport._scale)/3);
+	// 	var minY = viewportTop + ((Crafty.viewport.height/Crafty.viewport._scale)/3);
+	// 	var maxX = viewportRight - ((Crafty.viewport.width/Crafty.viewport._scale)/3);
+	// 	var maxY = viewportBottom - ((Crafty.viewport.width/Crafty.viewport._scale)/3);
+
+	// 	if (Game.player.x < minX) {
+	// 		// Crafty.viewport.scroll('x',
+	// 		// 	-(Game.player.x + (Game.player.w / 2) - (Crafty.viewport.width / 2)));
+	// 		Crafty.viewport.pan('x', -Game.map_grid.tile.width, Game.player.speed);
+	// 	} else if (Game.player.x+Game.player.w > maxX) {
+	// 		Crafty.viewport.pan('x', Game.map_grid.tile.width, Game.player.speed);
+	// 	}
+
+	// 	if (Game.player.y < minY) {
+	// 		// Crafty.viewport.scroll('y',
+	// 		// 	-(Game.player.y + (Game.player.h / 2) - (Crafty.viewport.height / 2)));
+	// 		Crafty.viewport.pan('y', -Game.map_grid.tile.height, Game.player.speed);
+	// 	} else if (Game.player.y > maxY) {	
+	// 		Crafty.viewport.pan('y', Game.map_grid.tile.height, Game.player.speed);
+	// 	}
+	// });
+
 }, function() {
+	Crafty.viewport.x = 0;
+	Crafty.viewport.y = 0;
 	this.unbind('PortVisited', this.showVictory);
+	this.unbind('PlayerMoved', this.cameraControl);
+});
+
+Crafty.scene('Map', function() {
+	Crafty.e('2D, DOM, Text')
+		.attr({ x: 0, y: 0, w: Game.viewportWidth() })
+		.text("MAP SCREEN")
+		.textFont({ size: '24px', family: 'Courier'})
+		.textColor('#FFFFFF', 1.0)
+		.css("text-align", "center");
 });
 
 Crafty.scene('GameOver', function(win) {
@@ -76,7 +82,7 @@ Crafty.scene('GameOver', function(win) {
 	}
 
 	Crafty.e('2D, DOM, Text')
-		.attr({ x: 0, y: Game.height()/3, w: Game.width() })
+		.attr({ x: 0, y: Game.viewportHeight()/3, w: Game.viewportWidth() })
 		.text(gameOverText)
 		.textFont({ size: '24px', family: 'Courier'})
 		.textColor('#FFFFFF', 1.0)
@@ -89,6 +95,10 @@ Crafty.scene('GameOver', function(win) {
 			type: 'success'
 		});
 	});
+
+	this.clickHandler = this.bind('Click', function(e) {
+		console.log('lol', e);
+	});
 }, function() {
 	this.unbind('KeyDown', this.restartGame);
 });
@@ -98,13 +108,13 @@ Crafty.scene('Loading', function() {
 		.text('Loading')
 		.attr({ x:0, y:Game.height()/2 - 24, w: Game.width() });
 
-	Crafty.load('[img/environment.gif]', function() {
+	Crafty.load('[img/environment.gif, img/oceanTile.png]', function() {
 		Crafty.sprite(32, 'img/environment.gif', {
 			spr_rock: [0, 0],
 			spr_island: [1, 0],
 			spr_port: [0, 1],
 			spr_player: [1, 1]
-		})
+		});
 
 		Crafty.scene('Game');
 	});
