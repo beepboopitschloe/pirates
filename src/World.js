@@ -43,6 +43,9 @@ World = {
 	islandToOceanRatio: 1/10,
 	islands: [],
 
+	mapModal: $('#world-map-modal'),
+	mapModalOpen: false,
+
 	init: function() {
 		for (var x=0; x<this.worldWidth; x++) {
 			this.worldMap[x] = new Array(this.worldWidth);
@@ -83,9 +86,20 @@ World = {
 		}
 	},
 
-	showMapModal: function() {
-		this.buildMapModal();
-		$('#world-map-modal').modal('show');
+	mapModalIsOpen: function() {
+		return this.mapModalOpen;
+	},
+
+	toggleMapModal: function() {
+		console.log("toggling map modal");
+		if (this.mapModalOpen) {
+			this.mapModalOpen = false;
+			this.mapModal.modal('hide');
+		} else {
+			this.mapModalOpen = true;
+			this.buildMapModal();
+			this.mapModal.modal('show');
+		}
 	},
 
 	generateIsland: function(chunkX, chunkY) {

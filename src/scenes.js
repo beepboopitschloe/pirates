@@ -11,6 +11,12 @@ Crafty.scene('Game', function() {
 		}
 	});
 
+	this.showWorldMap = this.bind('KeyDown', function(e) {
+		if (String.fromCharCode(e.keyCode) == 'M') {
+			World.toggleMapModal();
+		}
+	})
+
 	// this.cameraControl = this.bind('PlayerStartMove', function() {
 	// 	var viewportLeft = -Crafty.viewport.x;
 	// 	var viewportRight = (-Crafty.viewport.x) + (Crafty.viewport.width/Crafty.viewport._scale);
