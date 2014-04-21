@@ -331,7 +331,9 @@ World = {
 			placeX = Math.floor(Math.random() * distance) - distance/2 + startPort.at().x;
 			placeY = Math.floor(Math.random() * distance) - distance/2 + startPort.at().y;
 			distance++;
-		} while (Game.mapObjects[placeX][placeY].has && Game.mapObjects[placeX][placeY].has('Solid'));
+		} while (Game.withinBounds(placeX, placeY)
+				&& Game.mapObjects[placeX][placeY].has
+				&& Game.mapObjects[placeX][placeY].has('Solid'));
 
 		Game.player = Crafty.e('PlayerCharacter').at(placeX, placeY);
 		Crafty.viewport.follow(Game.player, 0, 0);

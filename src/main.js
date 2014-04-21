@@ -57,23 +57,48 @@ Game = {
 		return { x: x, y: y };
 	},
 
+	withinBounds: function(x, y) {
+		return (x > 0 && y > 0 && x < this.map_grid.width && y < this.map_grid.width);
+	},
+
 	neighbors: function(x, y, includeDiagonals) {
 		var neighbors = { };
 
 		try {
-			neighbors.up = this.mapObjects[x][y-1]? this.mapObjects[x][y-1] : [];
-			neighbors.down = this.mapObjects[x][y+1]? this.mapObjects[x][y+1] : [];
-			neighbors.left = this.mapObjects[x-1][y]? this.mapObjects[x-1][y] : [];
-			neighbors.right = this.mapObjects[x+1][y]? this.mapObjects[x+1][y] : [];
+			// try {
+			// 	neighbors.up = y > 0? this.mapObjects[x][y-1] : [];
+			// } catch(e) {
+			// 	console.log("up error", x, y);
+			// }
+			// try {
+			// 	neighbors.down = y < this.map_grid.height-2? this.mapObjects[x][y+1] : [];
+			// } catch(e) {
+			// 	console.log("down error", x, y);
+			// }
+			// try {
+			// 	neighbors.left = x > 0? this.mapObjects[x-1][y] : [];
+			// } catch(e) {
+			// 	console.log("left error", x, y);
+			// }
+			// try {	
+			// 	neighbors.right = x < this.map_grid.width-2? this.mapObjects[x+1][y] : [];
+			// } catch(e) {
+			// 	console.log("right error", x, y);
+			// }
+
+			neighbors.up = this.withinBounds(x, y-1)? this.mapObjects[x][y-1] : [];
+			neighbors.left = this.withinBounds(x-1, y)? this.mapObjects[x-1][y] : [];
+			neighbors.right = this.withinBounds(x+1, y)? this.mapObjects[x+1][y] : [];
+			neighbors.down = this.withinBounds(x, y+1)? this.mapObjects[x][y+1] : [];
 
 			if (includeDiagonals) {
-				neighbors.upLeft = this.mapObjects[x-1][y-1]? this.mapObjects[x-1][y-1] : [];
-				neighbors.upRight = this.mapObjects[x+1][y-1]? this.mapObjects[x+1][y-1] : [];
-				neighbors.downLeft = this.mapObjects[x-1][y+1]? this.mapObjects[x-1][y+1] : [];
-				neighbors.downRight = this.mapObjects[x+1][y+1]? this.mapObjects[x+1][y+1] : [];
+				neighbors.upLeft = this.withinBounds(x-1, y-1)? this.mapObjects[x-1][y-1] : [];
+				neighbors.upRight = this.withinBounds(x+1, y-1)? this.mapObjects[x+1][y-1] : [];
+				neighbors.downLeft = this.withinBounds(x-1, y+1)? this.mapObjects[x-1][y+1] : [];
+				neighbors.downRight = this.withinBounds(x+1, y+1)? this.mapObjects[x+1][y+1] : [];
 			}
 		} catch(e) {
-			console.log("neighbors error", x, y);
+			console.log(e, x, y, includeDiagonals);
 		}
 
 		// for (var cx = x-1; cx <= x+1; cx++) {
@@ -103,9 +128,14 @@ Game = {
 		var neighbors = this.neighbors(x, y, includeDiagonals);
 
 		for (key in neighbors) {
-			if (!neighbors[key])
-				console.log(neighbors, key);
-			if (neighbors[key].length == 0) {
+			if (!neighbors[key]) {
+				try {
+					throw new TypeError("Cannot find key " + key + " in " + JSON.stringify(neighbors));
+				} catch(e) {
+					//console.log(e, x, y);
+				}
+				continue;
+			} else if (neighbors[key].length == 0) {	
 				func('null', key, 0);
 				continue;
 			}
