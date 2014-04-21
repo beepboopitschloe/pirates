@@ -1,4 +1,5 @@
 Crafty.scene('Game', function() {
+	World.destroy();
 	World.init();
 
 	// this.parallax = Crafty.e('Parallax').attr({
@@ -7,6 +8,41 @@ Crafty.scene('Game', function() {
 	// });
 	// this.parallax.scrollOn('ViewportScroll');
 	// console.log(this.parallax);
+
+	this.spawnRate = 1/World.chunkWidth;
+	this.counter = 0;
+
+	this.spawnAndRemoveEnemies = this.bind('PlayerFinishMove', function() {
+		this.counter++;
+
+		if (this.counter == 25) {
+			toRemove = [];
+			for (var i = 0; i < Game.enemies.length; i++) {
+				enemy = Game.enemies[i];
+				eLoc = enemy.at();
+				pLoc = Game.player.at();
+
+				if (eLoc.x < pLoc.x - World.chunkWidth * 2
+						|| eLoc.x > pLoc.x + World.chunkWidth * 2
+						|| eLoc.y < pLoc.y - World.chunkHeight * 2
+						|| eLoc.y > pLoc.y + World.chunkHeight * 2) {
+					enemy.destroy();
+					toRemove.push(enemy);
+					console.log('despawn enemy due to farness');
+				}
+			}
+
+			for (var i=0; i < toRemove.length; i++) {
+				Game.enemies.remove(toRemove[i]);
+			}
+
+			this.counter = 0;
+		}
+
+		if (Game.enemies.length < Game.maxEnemies && Math.random() > this.spawnRate) {
+			World.spawnEnemy();
+		}
+	});
 
 	this.showVictory = this.bind('PortVisited', function() {
 		if (!Crafty('Port').length) {
@@ -56,7 +92,8 @@ Crafty.scene('Game', function() {
 	Crafty.viewport.x = 0;
 	Crafty.viewport.y = 0;
 	this.unbind('PortVisited', this.showVictory);
-	this.unbind('PlayerMoved', this.cameraControl);
+	this.unbind('PlayerFinishMove', this.spawnAndRemoveEnemies);
+	this.unbind('KeyDown', this.showWorldMap);
 });
 
 Crafty.scene('Map', function() {

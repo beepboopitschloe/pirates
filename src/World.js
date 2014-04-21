@@ -1,3 +1,17 @@
+function Chunk(x, y) {
+	this.x = x;
+	this.y = y;
+
+	this.empty = true;
+	this.inner = [];
+}
+
+Chunk.prototype.addInner = function(i) {
+	this.inner.push(i);
+	this.empty = false;
+	i.chunk = this;
+}
+
 function Island(minX, minY, maxX, maxY) {
 	this.minX = minX;
 	this.minY = minY;
@@ -8,6 +22,7 @@ function Island(minX, minY, maxX, maxY) {
 	this.sandTiles = [];
 
 	this.name = 'Ye Lonesome Isle';
+	this.chunk = null;
 }
 
 Island.prototype.name = function(strIn) {
@@ -40,7 +55,7 @@ World = {
 	chunkHeight: 24,
 
 	numIslands: 0,
-	inhabitedChance: 1/10,
+	inhabitedChance: 1/5,
 	islandToOceanRatio: 1/10,
 	islands: [],
 	ports: [],
@@ -52,14 +67,21 @@ World = {
 		for (var x=0; x<this.worldWidth; x++) {
 			this.worldMap[x] = new Array(this.worldWidth);
 			for (var y=0; y<this.worldHeight; y++) {
-				this.worldMap[x][y] = null;
+				this.worldMap[x][y] = new Chunk(x, y);
 			}
 		}
 
-		this.numIslands = Math.floor((this.worldWidth * this.worldHeight) * this.islandToOceanRatio); // 1-5 islands
+		this.numIslands = Math.floor((this.worldWidth * this.worldHeight * this.islandToOceanRatio)
+							+ (Math.random() * 3) - 1);
 		console.log('Generating', this.numIslands, 'islands');
 
 		this.generate();
+	},
+
+	destroy: function() {
+		this.worldMap = [];
+		this.islands = [];
+		this.ports = [];
 	},
 
 	buildMapModal: function() {
@@ -69,15 +91,13 @@ World = {
 		var playerChunkX = Math.floor(Game.player.x/Game.map_grid.tile.width/this.chunkWidth);
 		var playerChunkY = Math.floor(Game.player.y/Game.map_grid.tile.height/this.chunkHeight);
 
-		console.log("player in chunk", playerChunkX, playerChunkY);
-
 		for (var y=0; y<this.worldHeight; y++) {
 			for (var x=0; x<this.worldWidth; x++) {
 				var innerHtml = '';
 
 				if (x == playerChunkX && y == playerChunkY) {
 					innerHtml = '<img src="img/playerMapTile.png"</img>';
-				} else if (this.worldMap[x][y]) {
+				} else if (!this.worldMap[x][y].empty) {
 					innerHtml = '<img src="img/islandTile.png"</img>';
 				} else {
 					innerHtml = '<img src="img/oceanTile.png"</img>';
@@ -125,8 +145,6 @@ World = {
 		var endY = startY + islandBaseHeight;
 
 		var island = new Island(startX, startX + islandMaxWidth, startY, startY + islandMaxHeight);
-
-		console.log('starts', startX, startY);
 
 		for (var x=startX; x<endX; x++) {
 			for (var y=startY; y<endY; y++) {
@@ -281,7 +299,7 @@ World = {
 		}
 
 		// decide whether or not this island should be inhabited
-		if (Math.random() > this.inhabitedChance) {
+		if (Math.random() < this.inhabitedChance) {
 			// select a random inhabitable tile
 			var tile = inhabitableTiles[Math.floor(Math.random() * inhabitableTiles.length)];
 
@@ -291,12 +309,8 @@ World = {
 		}
 
 		// now stuff all this data into an island and add it to the map
-		this.worldMap[chunkX][chunkY] = island;
+		this.worldMap[chunkX][chunkY].addInner(island);
 		this.islands.push(island);
-	},
-
-	generatePort: function() {
-
 	},
 
 	generate: function() {
@@ -311,13 +325,11 @@ World = {
 			}
 		}
 
-		this.generateIsland(0, 0);
-
 		for (var i=0; i<this.numIslands-1; i++) {
 			do {
 				x = Math.floor(Math.random() * this.worldWidth);
 				y = Math.floor(Math.random() * this.worldHeight);
-			} while (this.worldMap[x][y]);
+			} while (!this.worldMap[x][y].empty);
 
 			this.generateIsland(x,y);
 		}
@@ -327,7 +339,6 @@ World = {
 		var placeX = 0; var placeY = 0; var distance = 2;
 
 		do {
-			console.log('loop', distance);
 			placeX = Math.floor(Math.random() * distance) - distance/2 + startPort.at().x;
 			placeY = Math.floor(Math.random() * distance) - distance/2 + startPort.at().y;
 			distance++;
@@ -337,5 +348,42 @@ World = {
 
 		Game.player = Crafty.e('PlayerCharacter').at(placeX, placeY);
 		Crafty.viewport.follow(Game.player, 0, 0);
+	},
+
+	findChunk: function(entity) {
+		if (!entity.has || !entity.has('Grid')) {
+			return;
+		}
+
+		var x = entity.at().x;
+		var y = entity.at().y;
+
+		return {
+			x: Math.floor(x/this.chunkWidth),
+			y: Math.floor(y/this.chunkHeight)
+		};
+	},
+
+	// spawn enemy within two chunks of player
+	spawnEnemy: function() {
+		var eligibleChunks = [];
+		var playerChunk = this.findChunk(Game.player);
+
+		for (var x = playerChunk.x-2; x < playerChunk.x+2; x++) {
+			for (var y = playerChunk.y-2; y < playerChunk.y+2; y++) {
+				if (x >= 0 && x < this.worldWidth && y >= 0 && y < this.worldHeight)
+					eligibleChunks.push(this.worldMap[x][y]);
+			}
+		}
+
+		var chunk = eligibleChunks[Math.floor(Math.random() * eligibleChunks.length)];
+		var placeX, placeY;
+
+		do {
+			placeX = Math.floor(Math.random() * this.chunkWidth) + (chunk.x * this.chunkWidth);
+			placeY = Math.floor(Math.random() * this.chunkHeight) + (chunk.y * this.chunkHeight);
+		} while (Game.mapObjects[placeX][placeY].has && Game.mapObjects[placeX][placeY].has('Solid'));
+
+		Game.enemies.push(Crafty.e('Enemy').at(placeX, placeY));
 	}
 }
