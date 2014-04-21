@@ -128,6 +128,9 @@ Crafty.c('FighterBrainPlayer', {
 
 	handleKeys: function() {
 		if (this.canAct) {
+			if (this.isDown('G'))
+				Crafty.scene('Game');
+			
 			this.update();
 			this.canAct = false;
 			this.delay(function() {
