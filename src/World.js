@@ -9,7 +9,7 @@ function Chunk(x, y) {
 Chunk.prototype.addInner = function(i) {
 	this.inner.push(i);
 	this.empty = false;
-	i.chunk = this;
+	i.chunk({chunk: this});
 }
 
 function Island(minX, minY, maxX, maxY) {
@@ -22,7 +22,20 @@ function Island(minX, minY, maxX, maxY) {
 	this.sandTiles = [];
 
 	this.name = 'Ye Lonesome Isle';
-	this.chunk = null;
+}
+
+Island.prototype.chunk = function(obj) {
+	if (!obj) {
+		return this.chunk;
+	} else if (obj.chunk) {
+		this.chunk.x = obj.chunk.x;
+		this.chunk.y = obj.chunk.y;
+	} else if (obj.x && obj.y) {
+		this.chunk.x = obj.x;
+		this.chunk.y = obj.y;
+	} else {
+		throw new TypeError("Argument to Island.chunk() does not have chunk or x, y");
+	}
 }
 
 Island.prototype.name = function(strIn) {
@@ -82,6 +95,79 @@ World = {
 		this.worldMap = [];
 		this.islands = [];
 		this.ports = [];
+	},
+
+	createNew: function() {
+		this.destroy();
+		this.init();
+	},
+
+	save: function() {
+		// set the modal to null, since jQuery objects are hella circular
+		this.mapModal = null;
+
+		// set the ports array to empty -- need entities to handle their own
+		//	saving/loading
+		this.ports = [];
+
+		try {
+			for (key in this) {
+				if (typeof this[key] != "function") {
+					console.log("Storing", key, "as World:" + key);
+					Crafty.storage("World:"+key, this[key]);
+				}
+			}
+		} catch(te) {
+			console.log(te);
+		}
+
+		// store the player
+		Crafty.storage("Player:at", Game.player.at());
+
+		// mark the world as being stored
+		Crafty.storage("World:stored", true);
+	},
+
+	unsave: function() {
+		// remove the saved world from browser storage
+		try {
+			for (key in this) {
+				if (typeof this[key] != "function") {
+					console.log("Deleting World:" + key + " from storage");
+					Crafty.storage.remove("World:"+key);
+				}
+			}
+		} catch(te) {
+			console.log(te);
+		}
+
+		// store the player
+		Crafty.storage.remove("Player:at");
+
+		// mark the world as being stored
+		Crafty.storage("World:stored", false);
+	},
+
+	load: function() {
+		// get world data
+		if (Crafty.storage("World:stored")) {
+			for (key in this) {
+				if (typeof this[key] != "function") {
+					console.log("Loading", key, "from World:" + key);
+					this[key] = Crafty.storage("World:"+key);
+				}
+			}
+		}
+
+		console.log(this.worldMap);
+		
+		// find the map modal again
+		this.mapModal = $("#world-map-modal");
+
+		// bring back the player
+		var playerLoc = Crafty.storage("Player:at");
+		Game.player = Crafty.e('PlayerCharacter').at(playerLoc.x, playerLoc.y);
+		Crafty.viewport.follow(Game.player);
 	},
 
 	buildMapModal: function() {
@@ -342,9 +428,9 @@ World = {
 			placeX = Math.floor(Math.random() * distance) - distance/2 + startPort.at().x;
 			placeY = Math.floor(Math.random() * distance) - distance/2 + startPort.at().y;
 			distance++;
-		} while (Game.withinBounds(placeX, placeY)
-				&& Game.mapObjects[placeX][placeY].has
-				&& Game.mapObjects[placeX][placeY].has('Solid'));
+		} while (!Game.withinBounds(placeX, placeY)
+				|| (Game.mapObjects[placeX][placeY].has
+					&& Game.mapObjects[placeX][placeY].has('Solid')));
 
 		Game.player = Crafty.e('PlayerCharacter').at(placeX, placeY);
 		Crafty.viewport.follow(Game.player, 0, 0);

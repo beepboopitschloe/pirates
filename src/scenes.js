@@ -1,6 +1,9 @@
 Crafty.scene('Game', function() {
-	World.destroy();
-	World.init();
+	if (Crafty.storage("World:stored")) {
+		World.load();
+	} else {
+		World.createNew();
+	}
 
 	// this.parallax = Crafty.e('Parallax').attr({
 	// 	x: -Crafty.viewport.x - Game.map_grid.tile.width,

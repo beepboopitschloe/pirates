@@ -422,6 +422,7 @@ Crafty.c('PlayerCharacter', {
 			target.x = 1;
 			target.y = 0;
 		} else if (this.isDown('T')) {
+			World.save();
 			Crafty.scene('Duel', Crafty.e('Enemy'));
 		} else if (this.isDown('V')) {
 			Crafty.scene('GameOver', true);
