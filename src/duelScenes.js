@@ -2,11 +2,11 @@ Crafty.scene('Duel', function(enemy) {
 	// var layer = new NeuronLayer(3, 3);
 
 	var fighter = Crafty.e('FighterBrainPlayer')
-					.attr({x:Game.viewportWidth()/2-16, y:Game.viewportHeight()/2});
+					.attr({x:Game.viewportWidth()/2-36, y:Game.viewportHeight()/2});
 	fighter.facing = 1;
 
 	var opponent = Crafty.e('FighterBrainRandom')
-					.attr({x:Game.viewportWidth()/2+16, y:Game.viewportHeight()/2})
+					.attr({x:Game.viewportWidth()/2+36, y:Game.viewportHeight()/2})
 					.flip('X');
 	opponent.facing = -1;
 

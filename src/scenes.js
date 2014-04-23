@@ -158,7 +158,7 @@ Crafty.scene('Loading', function() {
 			spr_player: [1, 1]
 		});
 
-		Crafty.sprite(32, 'img/playerFighter.png', {
+		Crafty.sprite(64, 'img/playerFighter.png', {
 			spr_fighter_tmp: [0, 0]
 		}, 0, 2);
 

@@ -141,9 +141,7 @@ Crafty.c('FighterBrainPlayer', {
 
 	getAction: function() {
 		if (this.isDown('W')) {
-			return this.actions[1];
-		} else if (this.isDown('S')) {
-			return this.actions[2];
+			return this.actions[0];
 		} else {
 			return null;
 		}
@@ -154,13 +152,13 @@ Crafty.c('FighterCore', {
 	init: function() {
 		this.requires('2D, Canvas, spr_fighter_tmp, SpriteAnimation, Tween, Delay')
 			.reel('Idle', 200, 0, 0, 1)
-			.reel('Punch', 300, 0, 1, 2)
-			.reel('Kick', 300, 3, 1, 2)
-			.reel('OnHit', 200, 0, 3, 1)
-			.reel('Die', 200, 3, 3, 1)
+			.reel('StrikeHigh', 550, 1, 0, 2)
+			.bind('FrameChange', this.frameChange)
 			.bind('AnimationEnd', this.animationEnd);
 
-		this.speed = 100; // ms between actions
+		this.turnSpeed = 100; // ms between actions
+		this.leapSpeed = 25; // speed of popForward();
+		this.inControl = true;
 
 		this.facing = 1; // -1 left, 1 right
 
@@ -197,26 +195,37 @@ Crafty.c('FighterCore', {
 		}
 	},
 
-	animationEnd: function(data) {
-		this.animate('Idle', this.animationSpeed, 1);
+	frameChange: function(reel) {
+
+	},
+
+	animationEnd: function(reel) {
+		if (reel.id == 'StrikeHigh') {
+			setTimeout(function() {
+				this.popBackward();
+				this.animate('Idle', 1);
+			}.bind(this), 1);
+		}
 	},
 
 	popForward: function() {
 		this.tween({
 			x: this.x+32*this.facing
-		}, 50);
-
-		this.one('TweenEnd', this.popBackward);
+		}, this.leapSpeed);
 	},
 
 	popBackward: function() {
 		this.tween({
 			x: this.x+32*this.facing*-1
-		}, 50);
+		}, (this.leapSpeed/3)*2);
+
+		this.inControl = true;
 	},
 
 	update: function() {
-		if (this.getAction) {
+		if (!this.inControl) {
+			return;
+		} else if (this.getAction) {
 			var nextAction = this.getAction();
 		} else {
 			console.log("Fighter has no brain attached!");
@@ -224,15 +233,17 @@ Crafty.c('FighterCore', {
 
 		switch(nextAction) {
 			case 'strikeHigh':
-
+				this.animate('StrikeHigh');
+				this.popForward();
+				this.inControl = false;
 				break;
 			case 'strikeMid':
-				this.animate('Punch');
-				this.popForward();
+				// this.animate('Punch');
+				// this.popForward();
 				break;
 			case 'strikeLow':
-				this.animate('Kick');
-				this.popForward();
+				// this.animate('Kick');
+				// this.popForward();
 				break;
 			case 'parryHigh':
 
