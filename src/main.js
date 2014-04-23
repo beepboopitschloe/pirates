@@ -9,16 +9,24 @@ Array.prototype.remove = function() {
     return this;
 };
 
+Helper = {
+	randomSeed: function() {
+		return Math.random().toString(36).slice(2);
+	}
+}
+
 Game = {
 	map_grid: {
-		width: World.worldWidth * World.chunkWidth,
-		height: World.worldHeight * World.chunkHeight,
+		width: World.settings.worldWidth * World.settings.chunkWidth,
+		height: World.settings.worldHeight * World.settings.chunkHeight,
 		tile: {
 			width: 32,
 			height: 32,
 			margin: 0
 		}
 	},
+
+	worldSeed: "Test",
 
 	player: null,
 	enemies: [],
