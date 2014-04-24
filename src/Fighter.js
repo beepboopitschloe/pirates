@@ -107,12 +107,11 @@ Crafty.c('FighterBrainRandom', {
 		var action = "";
 
 		if (Math.random() > .5) {
-			action = 'strikeLow';
+			action = 'strikeHigh';
 		} else {
 			action = 'strikeMid';
 		}
 
-		console.log(action);
 		return action;
 	}
 });
@@ -122,26 +121,29 @@ Crafty.c('FighterBrainPlayer', {
 		this.requires('FighterCore, Keyboard')
 			.bind('KeyDown', this.handleKeys);
 
-		this.speed = 250;
-		this.canAct = true;
+		this.canTakeInput = true;
 	},
 
 	handleKeys: function() {
-		if (this.canAct) {
+		if (this.canTakeInput) {
 			if (this.isDown('G'))
 				Crafty.scene('Game');
 			
 			this.update();
-			this.canAct = false;
+			this.canTakeInput = false;
 			this.delay(function() {
-				this.canAct = true;
-			}, this.speed, 0);
+				this.canTakeInput = true;
+			}, this.turnSpeed, 0);
 		}
 	},
 
 	getAction: function() {
 		if (this.isDown('W')) {
 			return this.actions[0];
+		} else if (this.isDown('D')) {
+			return this.actions[1];
+		} else if (this.isDown('S')) {
+			return this.actions[2];
 		} else {
 			return null;
 		}
@@ -152,13 +154,19 @@ Crafty.c('FighterCore', {
 	init: function() {
 		this.requires('2D, Canvas, spr_fighter_tmp, SpriteAnimation, Tween, Delay')
 			.reel('Idle', 200, 0, 0, 1)
-			.reel('StrikeHigh', 550, 1, 0, 2)
+			.reel('strikeHigh', 550, 0, 1, 2)
+			.reel('dodgeHigh', 500, 2, 1, 1)
+			.reel('strikeMid', 550, 0, 2, 2)
+			.reel('strikeLow', 550, 0, 3, 2)
 			.bind('FrameChange', this.frameChange)
-			.bind('AnimationEnd', this.animationEnd);
+			.bind('AnimationEnd', this.animationEnd)
+			.bind('FighterAttackFrame', this.handleAttack)
+			.bind('FighterAttackResolved', this.handleAttackResolution);
 
-		this.turnSpeed = 100; // ms between actions
+		this.turnSpeed = 250; // ms between actions
 		this.leapSpeed = 25; // speed of popForward();
-		this.inControl = true;
+		this.dodgeLength = 32; // amount you are pushed back by a successful hit
+		this.canAct = true;
 
 		this.facing = 1; // -1 left, 1 right
 
@@ -170,6 +178,18 @@ Crafty.c('FighterCore', {
 			'parryMid',
 			'parryLow'
 		];
+
+		this.strikeZones = {
+			'strikeHigh': function() {
+				return {x: this.x+28, y: this.y+9};
+			}.bind(this),
+			'strikeMid': function() {
+				return {x: this.x+30, y: this.y+18};
+			}.bind(this),
+			'strikeLow': function() {
+				return {x: this.x+31, y: this.y+27};
+			}.bind(this),
+		};
 	},
 
 	bestResponse: function(strike) {
@@ -196,11 +216,28 @@ Crafty.c('FighterCore', {
 	},
 
 	frameChange: function(reel) {
-
+		// handle necessary movements for certain animations
+		//	eg, move 48 pixels forward for the last frame of a stab
+		if (reel.id == 'strikeHigh') {
+			if (reel.currentFrame == 1) {
+				Crafty.trigger('FighterAttackFrame', {fighter: this, action: reel.id});
+				this.tween({x: this.x+(12*this.facing)}, this.leapSpeed);
+			}
+		} else if (reel.id == 'strikeMid') {
+			if (reel.currentFrame == 1) {
+				Crafty.trigger('FighterAttackFrame', {fighter: this, action: reel.id});
+				this.tween({x: this.x+(24*this.facing)}, this.leapSpeed);
+			}
+		} else if (reel.id == 'strikeLow') {
+			if (reel.currentFrame == 1) {
+				Crafty.trigger('FighterAttackFrame', {fighter: this, action: reel.id});
+				this.tween({x: this.x+(24*this.facing)}, this.leapSpeed);
+			}
+		}
 	},
 
 	animationEnd: function(reel) {
-		if (reel.id == 'StrikeHigh') {
+		if (reel.id != 'Idle') {
 			setTimeout(function() {
 				this.popBackward();
 				this.animate('Idle', 1);
@@ -208,22 +245,71 @@ Crafty.c('FighterCore', {
 		}
 	},
 
+	handleAttack: function(data) {
+		if (data.fighter == this) {
+			return;
+		}
+
+		var fighter = data.fighter,
+			action = data.action,
+			strikePnt = fighter.strikeZones[action]();
+
+		if (this.facing == 1) {
+			console.log(this.x, strikePnt.x);
+			if (strikePnt.x > this.x+this.w) {
+				console.log(this.x, strikePnt.x, 'strike too far to the left');
+				return;
+			}
+		} else if (this.facing == -1) {
+			if (strikePnt.x < this.x-this.w) {
+				console.log(this.x, this.w, strikePnt.x, 'strike too far to the right');
+				return;
+			}
+		}
+
+		if (action.indexOf('strike') > -1) {
+			this.animate('dodgeHigh');
+			this.tween({x: this.x-(this.dodgeLength*this.facing)}, this.leapSpeed);
+			Crafty.trigger('FighterAttackResolved', {resolvedBy: this, action: action, result: 'dodged'});
+		} else {
+			console.log(action);
+		}
+	},
+
+	handleAttackResolution: function(data) {
+		if (data.resolvedBy == this)
+			return;
+
+		var fighter = data.resolvedBy,
+			action = data.action,
+			result = data.result;
+
+		if (result == 'dodged') {
+			this.tween({x: this.x+(fighter.dodgeLength*this.facing)}, this.leapSpeed);
+		} else if (result == 'parried') {
+
+		}
+	},
+
 	popForward: function() {
+		this.popStart = {x: this.x};
 		this.tween({
 			x: this.x+32*this.facing
 		}, this.leapSpeed);
 	},
 
 	popBackward: function() {
-		this.tween({
-			x: this.x+32*this.facing*-1
-		}, (this.leapSpeed/3)*2);
+		if (!this.popStart || !this.popStart.x) {
+			this.popStart = {x: this.x+32*this.facing-1};
+		}
 
-		this.inControl = true;
+		this.tween(this.popStart, (this.leapSpeed/3)*2);
+
+		this.one('TweenEnd', function() {this.canAct = true}.bind(this));
 	},
 
 	update: function() {
-		if (!this.inControl) {
+		if (!this.canAct) {
 			return;
 		} else if (this.getAction) {
 			var nextAction = this.getAction();
@@ -233,17 +319,19 @@ Crafty.c('FighterCore', {
 
 		switch(nextAction) {
 			case 'strikeHigh':
-				this.animate('StrikeHigh');
+				this.animate('strikeHigh');
 				this.popForward();
-				this.inControl = false;
+				this.canAct = false;
 				break;
 			case 'strikeMid':
-				// this.animate('Punch');
-				// this.popForward();
+				this.animate('strikeMid');
+				this.popForward();
+				this.canAct = false;
 				break;
 			case 'strikeLow':
-				// this.animate('Kick');
-				// this.popForward();
+				this.animate('strikeLow');
+				this.popForward();
+				this.canAct = false;
 				break;
 			case 'parryHigh':
 
