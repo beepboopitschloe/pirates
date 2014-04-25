@@ -138,12 +138,18 @@ Crafty.c('FighterBrainPlayer', {
 	},
 
 	getAction: function() {
-		if (this.isDown('W')) {
+		if (this.isDown('E')) {
 			return this.actions[0];
 		} else if (this.isDown('D')) {
 			return this.actions[1];
-		} else if (this.isDown('S')) {
+		} else if (this.isDown('C')) {
 			return this.actions[2];
+		} else if (this.isDown('W')) {
+			return this.actions[3];
+		} else if (this.isDown('S')) {
+			return this.actions[4];
+		} else if (this.isDown('X')) {
+			return this.actions[5];
 		} else {
 			return null;
 		}
@@ -229,11 +235,14 @@ Crafty.c('FighterCore', {
 
 		this.reel('Idle', 200, 0, 0, 1)
 			.reel('strikeHigh', this.strikes.strikeHigh.speed, 0, 1, 2)
-			.reel('dodgeHigh', 500, 2, 1, 1)
+			.reel('dodgeHigh', 550, 2, 1, 1)
+			.reel('parryHigh', 500, 3, 1, 1)
 			.reel('strikeMid', this.strikes.strikeMid.speed, 0, 2, 2)
 			.reel('dodgeMid', 550, 2, 2, 1)
+			.reel('parryMid', 500, 3, 2, 1)
 			.reel('strikeLow', this.strikes.strikeLow.speed, 0, 3, 2)
-			.reel('dodgeLow', 550, 2, 3, 1);
+			.reel('dodgeLow', 550, 2, 3, 1)
+			.reel('parryLow', 500, 3, 3, 1);
 	},
 
 	bestResponse: function(strike) {
@@ -317,7 +326,7 @@ Crafty.c('FighterCore', {
 			this.tween({x: this.x-(this.dodgeLength*this.facing)}, this.dodgeSpeed);
 			this.canAct = false;
 			this.one('TweenEnd', function() { this.canAct = true; }.bind(this));
-			
+
 			Crafty.trigger('FighterAttackResolved', {resolvedBy: this, action: action, result: 'dodged'});
 		} else {
 			console.log(action);
@@ -363,33 +372,13 @@ Crafty.c('FighterCore', {
 			console.log("Fighter has no brain attached!");
 		}
 
-		switch(nextAction) {
-			case 'strikeHigh':
-				this.animate('strikeHigh');
-				this.popForward();
-				this.canAct = false;
-				break;
-			case 'strikeMid':
-				this.animate('strikeMid');
-				this.popForward();
-				this.canAct = false;
-				break;
-			case 'strikeLow':
-				this.animate('strikeLow');
-				this.popForward();
-				this.canAct = false;
-				break;
-			case 'parryHigh':
-
-				break;
-			case 'parryMid':
-
-				break;
-			case 'parryLow':
-
-				break;
-			default:
-				return;
+		if (nextAction.indexOf('strike') > -1) {
+			this.animate(nextAction);
+			this.popForward();
+			this.canAct = false;
+		} else if (nextAction.indexOf('parry') > -1) {
+			this.animate(nextAction);
+			this.canAct = false;
 		}
 
 		Crafty.trigger('FighterAction', { fighter: this, action: nextAction});
