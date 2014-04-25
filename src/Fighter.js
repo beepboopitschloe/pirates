@@ -157,7 +157,9 @@ Crafty.c('FighterCore', {
 			.reel('strikeHigh', 550, 0, 1, 2)
 			.reel('dodgeHigh', 500, 2, 1, 1)
 			.reel('strikeMid', 550, 0, 2, 2)
+			.reel('dodgeMid', 550, 2, 2, 1)
 			.reel('strikeLow', 550, 0, 3, 2)
+			.reel('dodgeLow', 550, 2, 3, 1)
 			.bind('FrameChange', this.frameChange)
 			.bind('AnimationEnd', this.animationEnd)
 			.bind('FighterAttackFrame', this.handleAttack)
@@ -257,18 +259,29 @@ Crafty.c('FighterCore', {
 		if (this.facing == 1) {
 			console.log(this.x, strikePnt.x);
 			if (strikePnt.x > this.x+this.w) {
-				console.log(this.x, strikePnt.x, 'strike too far to the left');
+				// console.log(this.x, strikePnt.x, 'strike too far to the left');
 				return;
 			}
 		} else if (this.facing == -1) {
 			if (strikePnt.x < this.x-this.w) {
-				console.log(this.x, this.w, strikePnt.x, 'strike too far to the right');
+				// console.log(this.x, this.w, strikePnt.x, 'strike too far to the right');
 				return;
 			}
 		}
 
 		if (action.indexOf('strike') > -1) {
-			this.animate('dodgeHigh');
+			switch(action) {
+				case 'strikeHigh':
+					this.animate('dodgeHigh');
+					break;
+				case 'strikeMid':
+					this.animate('dodgeMid');
+					break;
+				case 'strikeLow':
+					this.animate('dodgeLow');
+					break;
+			}
+
 			this.tween({x: this.x-(this.dodgeLength*this.facing)}, this.leapSpeed);
 			Crafty.trigger('FighterAttackResolved', {resolvedBy: this, action: action, result: 'dodged'});
 		} else {
