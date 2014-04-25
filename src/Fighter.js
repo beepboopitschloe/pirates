@@ -91,6 +91,8 @@ Crafty.c('FighterBrainRandom', {
 			.bind('FighterAction', this.respond);
 
 		this.speed = 500;
+
+		// setInterval(this.update.bind(this), this.speed);
 	},
 
 	respond: function(data) {
@@ -106,10 +108,14 @@ Crafty.c('FighterBrainRandom', {
 	getAction: function() {
 		var action = "";
 
-		if (Math.random() > .5) {
+		rand = Math.random();
+
+		if (rand < .33) {
 			action = 'strikeHigh';
-		} else {
+		} else if (rand > .33 && rand < .66) {
 			action = 'strikeMid';
+		} else {
+			action = 'strikeLow';
 		}
 
 		return action;
@@ -138,18 +144,18 @@ Crafty.c('FighterBrainPlayer', {
 	},
 
 	getAction: function() {
-		if (this.isDown('E')) {
-			return this.actions[0];
+		if (this.isDown('W')) {
+			return 'strikeHigh';
 		} else if (this.isDown('D')) {
-			return this.actions[1];
-		} else if (this.isDown('C')) {
-			return this.actions[2];
-		} else if (this.isDown('W')) {
-			return this.actions[3];
+			return 'strikeMid';
 		} else if (this.isDown('S')) {
-			return this.actions[4];
-		} else if (this.isDown('X')) {
-			return this.actions[5];
+			return 'strikeLow';
+		} else if (this.isDown('I')) {
+			return 'parryHigh';
+		} else if (this.isDown('K')) {
+			return 'parryMid';
+		} else if (this.isDown('J')) {
+			return 'parryLow';
 		} else {
 			return null;
 		}
@@ -245,25 +251,25 @@ Crafty.c('FighterCore', {
 			.reel('parryLow', 500, 3, 3, 1);
 	},
 
-	bestResponse: function(strike) {
-		switch (strike) {
-			case 0:
-				return 3;
+	bestResponse: function(action) {
+		switch (action) {
+			case 'strikeHigh':
+				return 'parryHigh';
 				break;
-			case 1:
-				return 4;
+			case 'strikeMid':
+				return 'parryMid';
 				break;
-			case 2:
-				return 5;
+			case 'strikeLow':
+				return 'parryLow';
 				break;
-			case 3:
-				return 2;
+			case 'parryHigh':
+				return 'strikeLow';
 				break;
-			case 4:
-				return 1;
+			case 'parryMid':
+				return 'strikeHigh';
 				break;
-			case 5:
-				return 0;
+			case 'parryLow':
+				return 'strikeLow';
 				break;
 		}
 	},
@@ -271,19 +277,27 @@ Crafty.c('FighterCore', {
 	frameChange: function(reel) {
 		// handle necessary movements for certain animations
 		//	eg, move 48 pixels forward for the last frame of a stab
+		var eventData = { fighter: this, action: reel.id, parry: false };
+		if (this.parried) {
+			eventData.parry = true;
+			this.parried = false;
+
+			setTimeout(function() {this.canAct = true;}.bind(this), this.turnSpeed/2);
+		}
+
 		if (reel.id == 'strikeHigh') {
 			if (reel.currentFrame == 1) {
-				Crafty.trigger('FighterAttackFrame', {fighter: this, action: reel.id});
+				Crafty.trigger('FighterAttackFrame', eventData);
 				this.tween({x: this.x+(12*this.facing)}, this.leapSpeed);
 			}
 		} else if (reel.id == 'strikeMid') {
 			if (reel.currentFrame == 1) {
-				Crafty.trigger('FighterAttackFrame', {fighter: this, action: reel.id});
+				Crafty.trigger('FighterAttackFrame', eventData);
 				this.tween({x: this.x+(24*this.facing)}, this.leapSpeed);
 			}
 		} else if (reel.id == 'strikeLow') {
 			if (reel.currentFrame == 1) {
-				Crafty.trigger('FighterAttackFrame', {fighter: this, action: reel.id});
+				Crafty.trigger('FighterAttackFrame', eventData);
 				this.tween({x: this.x+(24*this.facing)}, this.leapSpeed);
 			}
 		}
@@ -311,23 +325,34 @@ Crafty.c('FighterCore', {
 			return;
 
 		if (action.indexOf('strike') > -1) {
-			switch(action) {
-				case 'strikeHigh':
-					this.animate('dodgeHigh');
-					break;
-				case 'strikeMid':
-					this.animate('dodgeMid');
-					break;
-				case 'strikeLow':
-					this.animate('dodgeLow');
-					break;
+			if (this.getReel() && this.getReel().id == this.bestResponse(action)) {
+				Crafty.trigger('FighterAttackResolved', {resolvedBy: this, action: action, result: 'parried'});
+				this.parried = true;
+				this.animate('strikeHigh');
+			} else {
+				switch(action) {
+					case 'strikeHigh':
+						this.animate('dodgeHigh');
+						break;
+					case 'strikeMid':
+						this.animate('dodgeMid');
+						break;
+					case 'strikeLow':
+						this.animate('dodgeLow');
+						break;
+				}
+
+				var target = {x: this.x-(this.dodgeLength*this.facing)};
+				if (data.parry) {
+					target.x -= (this.dodgeLength*this.facing)/2;
+				}
+
+				this.tween(target, this.dodgeSpeed);
+				this.canAct = false;
+				this.one('TweenEnd', function() { this.canAct = true; }.bind(this));
+
+				Crafty.trigger('FighterAttackResolved', {resolvedBy: this, action: action, result: 'dodged'});
 			}
-
-			this.tween({x: this.x-(this.dodgeLength*this.facing)}, this.dodgeSpeed);
-			this.canAct = false;
-			this.one('TweenEnd', function() { this.canAct = true; }.bind(this));
-
-			Crafty.trigger('FighterAttackResolved', {resolvedBy: this, action: action, result: 'dodged'});
 		} else {
 			console.log(action);
 		}
@@ -344,7 +369,7 @@ Crafty.c('FighterCore', {
 		if (result == 'dodged') {
 			this.tween({x: this.x+(fighter.dodgeLength*this.facing)}, this.leapSpeed);
 		} else if (result == 'parried') {
-
+			console.log('got parried');
 		}
 	},
 
@@ -368,6 +393,7 @@ Crafty.c('FighterCore', {
 			return;
 		} else if (this.getAction) {
 			var nextAction = this.getAction();
+			if (!nextAction) return;
 		} else {
 			console.log("Fighter has no brain attached!");
 		}
