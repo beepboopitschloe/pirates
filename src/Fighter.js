@@ -153,13 +153,6 @@ Crafty.c('FighterBrainPlayer', {
 Crafty.c('FighterCore', {
 	init: function() {
 		this.requires('2D, Canvas, spr_fighter_tmp, SpriteAnimation, Tween, Delay')
-			.reel('Idle', 200, 0, 0, 1)
-			.reel('strikeHigh', 550, 0, 1, 2)
-			.reel('dodgeHigh', 500, 2, 1, 1)
-			.reel('strikeMid', 550, 0, 2, 2)
-			.reel('dodgeMid', 550, 2, 2, 1)
-			.reel('strikeLow', 550, 0, 3, 2)
-			.reel('dodgeLow', 550, 2, 3, 1)
 			.bind('FrameChange', this.frameChange)
 			.bind('AnimationEnd', this.animationEnd)
 			.bind('FighterAttackFrame', this.handleAttack)
@@ -167,7 +160,8 @@ Crafty.c('FighterCore', {
 
 		this.turnSpeed = 250; // ms between actions
 		this.leapSpeed = 25; // speed of popForward();
-		this.dodgeLength = 32; // amount you are pushed back by a successful hit
+		this.dodgeLength = 64; // amount you are pushed back by a successful hit
+		this.dodgeSpeed = 78;
 		this.canAct = true;
 
 		this.facing = 1; // -1 left, 1 right
@@ -181,17 +175,65 @@ Crafty.c('FighterCore', {
 			'parryLow'
 		];
 
+		this.vulnerableArea = {
+			left: function() {
+				return this.x+(32*this.facing);
+			}.bind(this),
+			right: function() {
+				return this.x+(80*this.facing);
+			}.bind(this),
+			top: function() {
+				return this.y;
+			}.bind(this),
+			bottom: function() {
+				return this.y+this.h;
+			}.bind(this),
+			contains: function(x, y) {
+				if (this.facing == 1) {
+					// console.log(x, this.vulnerableArea.left(), this.vulnerableArea.right());
+					return (x < this.vulnerableArea.right());
+				} else if (this.facing == -1) {
+					return (x > this.vulnerableArea.right());
+				} else {
+					return false;
+				}
+			}.bind(this)
+		};
+
 		this.strikeZones = {
 			'strikeHigh': function() {
-				return {x: this.x+28, y: this.y+9};
+				return {x: this.x+(28*this.facing), y: this.y+9};
 			}.bind(this),
 			'strikeMid': function() {
-				return {x: this.x+30, y: this.y+18};
+				return {x: this.x+(22*this.facing), y: this.y+18};
 			}.bind(this),
 			'strikeLow': function() {
-				return {x: this.x+31, y: this.y+27};
+				return {x: this.x+(31*this.facing), y: this.y+27};
 			}.bind(this),
 		};
+
+		this.strikes = {
+			strikeHigh: {
+				speed: 550,
+				pushMod: 2
+			},
+			strikeMid: {
+				speed: 350,
+				pushMod: .5
+			},
+			strikeLow: {
+				speed: 450,
+				pushMod: 1
+			}
+		};
+
+		this.reel('Idle', 200, 0, 0, 1)
+			.reel('strikeHigh', this.strikes.strikeHigh.speed, 0, 1, 2)
+			.reel('dodgeHigh', 500, 2, 1, 1)
+			.reel('strikeMid', this.strikes.strikeMid.speed, 0, 2, 2)
+			.reel('dodgeMid', 550, 2, 2, 1)
+			.reel('strikeLow', this.strikes.strikeLow.speed, 0, 3, 2)
+			.reel('dodgeLow', 550, 2, 3, 1);
 	},
 
 	bestResponse: function(strike) {
@@ -240,10 +282,10 @@ Crafty.c('FighterCore', {
 
 	animationEnd: function(reel) {
 		if (reel.id != 'Idle') {
+			this.animate('Idle', 1);
 			setTimeout(function() {
-				this.popBackward();
-				this.animate('Idle', 1);
-			}.bind(this), 1);
+				this.canAct = true;
+			}.bind(this), this.turnSpeed);
 		}
 	},
 
@@ -256,18 +298,8 @@ Crafty.c('FighterCore', {
 			action = data.action,
 			strikePnt = fighter.strikeZones[action]();
 
-		if (this.facing == 1) {
-			console.log(this.x, strikePnt.x);
-			if (strikePnt.x > this.x+this.w) {
-				// console.log(this.x, strikePnt.x, 'strike too far to the left');
-				return;
-			}
-		} else if (this.facing == -1) {
-			if (strikePnt.x < this.x-this.w) {
-				// console.log(this.x, this.w, strikePnt.x, 'strike too far to the right');
-				return;
-			}
-		}
+		if (!this.vulnerableArea.contains(strikePnt.x, strikePnt.y))
+			return;
 
 		if (action.indexOf('strike') > -1) {
 			switch(action) {
@@ -282,7 +314,10 @@ Crafty.c('FighterCore', {
 					break;
 			}
 
-			this.tween({x: this.x-(this.dodgeLength*this.facing)}, this.leapSpeed);
+			this.tween({x: this.x-(this.dodgeLength*this.facing)}, this.dodgeSpeed);
+			this.canAct = false;
+			this.one('TweenEnd', function() { this.canAct = true; }.bind(this));
+			
 			Crafty.trigger('FighterAttackResolved', {resolvedBy: this, action: action, result: 'dodged'});
 		} else {
 			console.log(action);
@@ -317,8 +352,6 @@ Crafty.c('FighterCore', {
 		}
 
 		this.tween(this.popStart, (this.leapSpeed/3)*2);
-
-		this.one('TweenEnd', function() {this.canAct = true}.bind(this));
 	},
 
 	update: function() {

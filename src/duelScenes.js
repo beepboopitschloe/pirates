@@ -1,13 +1,15 @@
 Crafty.scene('Duel', function(enemy) {
 	// var layer = new NeuronLayer(3, 3);
 
-	var fighter = Crafty.e('FighterBrainPlayer')
-					.attr({x:Game.viewportWidth()/2-32, y:Game.viewportHeight()/2});
+	var fighter = Crafty.e('FighterBrainPlayer');
+	fighter.attr({x:Game.viewportWidth()/2, y:Game.viewportHeight()/2});
+	fighter.x -= fighter.w - 4;
 	fighter.facing = 1;
 
 	var opponent = Crafty.e('FighterBrainRandom')
-					.attr({x:Game.viewportWidth()/2+64, y:Game.viewportHeight()/2})
+					.attr({x:Game.viewportWidth()/2, y:Game.viewportHeight()/2})
 					.flip('X');
+	opponent.x -= 4;
 	opponent.facing = -1;
 
 	this.hintText = null;
