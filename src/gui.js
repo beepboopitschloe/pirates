@@ -23,7 +23,15 @@ gui = {
 
 		notification += '</div>'
 
-		this.notifications.push(this.controls.after(notification));
+		var element = $($.parseHTML(notification));
+
+		this.controls.after(element);
+
+		this.notifications.push(element);
+
+		if (this.notifications.length > 101) {
+			$(this.notifications.shift()).remove();
+		}
 	},
 
 	status: function(obj) {

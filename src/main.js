@@ -9,16 +9,24 @@ Array.prototype.remove = function() {
     return this;
 };
 
+Helper = {
+	randomSeed: function() {
+		return Math.random().toString(36).slice(2);
+	}
+}
+
 Game = {
 	map_grid: {
-		width: World.worldWidth * World.chunkWidth,
-		height: World.worldHeight * World.chunkHeight,
+		width: World.settings.worldWidth * World.settings.chunkWidth,
+		height: World.settings.worldHeight * World.settings.chunkHeight,
 		tile: {
 			width: 32,
 			height: 32,
 			margin: 0
 		}
 	},
+
+	worldSeed: "Test",
 
 	player: null,
 	enemies: [],
@@ -61,44 +69,28 @@ Game = {
 		return { x: x, y: y };
 	},
 
+	withinBounds: function(x, y) {
+		return (x > 0 && y > 0 && x < this.map_grid.width && y < this.map_grid.width);
+	},
+
 	neighbors: function(x, y, includeDiagonals) {
 		var neighbors = { };
 
 		try {
-			neighbors.up = this.mapObjects[x][y-1]? this.mapObjects[x][y-1] : [];
-			neighbors.down = this.mapObjects[x][y+1]? this.mapObjects[x][y+1] : [];
-			neighbors.left = this.mapObjects[x-1][y]? this.mapObjects[x-1][y] : [];
-			neighbors.right = this.mapObjects[x+1][y]? this.mapObjects[x+1][y] : [];
+			neighbors.up = this.withinBounds(x, y-1)? this.mapObjects[x][y-1] : [];
+			neighbors.left = this.withinBounds(x-1, y)? this.mapObjects[x-1][y] : [];
+			neighbors.right = this.withinBounds(x+1, y)? this.mapObjects[x+1][y] : [];
+			neighbors.down = this.withinBounds(x, y+1)? this.mapObjects[x][y+1] : [];
 
 			if (includeDiagonals) {
-				neighbors.upLeft = this.mapObjects[x-1][y-1]? this.mapObjects[x-1][y-1] : [];
-				neighbors.upRight = this.mapObjects[x+1][y-1]? this.mapObjects[x+1][y-1] : [];
-				neighbors.downLeft = this.mapObjects[x-1][y+1]? this.mapObjects[x-1][y+1] : [];
-				neighbors.downRight = this.mapObjects[x+1][y+1]? this.mapObjects[x+1][y+1] : [];
+				neighbors.upLeft = this.withinBounds(x-1, y-1)? this.mapObjects[x-1][y-1] : [];
+				neighbors.upRight = this.withinBounds(x+1, y-1)? this.mapObjects[x+1][y-1] : [];
+				neighbors.downLeft = this.withinBounds(x-1, y+1)? this.mapObjects[x-1][y+1] : [];
+				neighbors.downRight = this.withinBounds(x+1, y+1)? this.mapObjects[x+1][y+1] : [];
 			}
 		} catch(e) {
-			console.log("neighbors error", x, y);
+			console.log(e, x, y, includeDiagonals);
 		}
-
-		// for (var cx = x-1; cx <= x+1; cx++) {
-		// 	for (var cy = y-1; cy <= y+1; cy++) {
-		// 		if ((cx == x && cy == y)
-		// 			|| cx < 0 || cy < 0
-		// 			|| cx > this.map_grid.width
-		// 			|| cy > this.map_grid.height) {
-		// 			continue;
-		// 		}
-		// 		// console.log("neighbor at", cx, cy);
-		// 		if (this.mapObjects[cx][cy][0])
-		// 			neighborsArray.push(this.mapObjects[cx][cy][0]);
-		// 		else
-		// 			neighborsArray.push('null');
-		// 	}
-		// 	// console.log("y loop done at", cy, "from", y);
-		// }
-		// // console.log("x loop done at", cx, "from", x);
-
-		// console.log(neighbors);
 
 		return neighbors;
 	},
@@ -107,9 +99,14 @@ Game = {
 		var neighbors = this.neighbors(x, y, includeDiagonals);
 
 		for (key in neighbors) {
-			if (!neighbors[key])
-				console.log(neighbors, key);
-			if (neighbors[key].length == 0) {
+			if (!neighbors[key]) {
+				try {
+					throw new TypeError("Cannot find key " + key + " in " + JSON.stringify(neighbors));
+				} catch(e) {
+					console.log(e, x, y);
+				}
+				continue;
+			} else if (neighbors[key].length == 0) {	
 				func('null', key, 0);
 				continue;
 			}
@@ -157,6 +154,9 @@ Game = {
 	},
 
 	start: function() {
+		// clear the saved world (for testing purposes)
+		World.unsave();
+
 		// start Crafty
 		Crafty.init(Game.width(), Game.height(), "cr-stage");
 		// Crafty.timer.FPS(32);
@@ -164,6 +164,13 @@ Game = {
     	//Crafty.viewport.scale(3);
     	Crafty.viewport.width = this.viewportWidth();
     	Crafty.viewport.height = this.viewportHeight();
+
+	   	this.duelStage = {
+			x: this.viewportWidth()/8,
+			y: (this.viewportHeight()/3)*2,
+			w: (this.viewportWidth()/4)*3,
+			h: this.viewportHeight()/3
+		};
 
     	// set up notification feed
     	gui.init();
