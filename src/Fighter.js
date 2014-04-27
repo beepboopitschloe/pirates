@@ -150,11 +150,11 @@ Crafty.c('FighterBrainPlayer', {
 			return 'strikeMid';
 		} else if (this.isDown('S')) {
 			return 'strikeLow';
-		} else if (this.isDown('I')) {
+		} else if (this.isDown('U')) {
 			return 'parryHigh';
-		} else if (this.isDown('K')) {
-			return 'parryMid';
 		} else if (this.isDown('J')) {
+			return 'parryMid';
+		} else if (this.isDown('H')) {
 			return 'parryLow';
 		} else {
 			return null;
@@ -167,14 +167,19 @@ Crafty.c('FighterCore', {
 		this.requires('2D, Canvas, spr_fighter_tmp, SpriteAnimation, Tween, Delay')
 			.bind('FrameChange', this.frameChange)
 			.bind('AnimationEnd', this.animationEnd)
+			.bind('TweenEnd', this.handleFall)
 			.bind('FighterAttackFrame', this.handleAttack)
 			.bind('FighterAttackResolved', this.handleAttackResolution);
 
-		this.turnSpeed = 250; // ms between actions
+		this.turnSpeed = 1; // ms between actions
 		this.leapSpeed = 25; // speed of popForward();
+		this.baseAttackSpeed = 500;
+		this.stunLength = 500;
+		this.stunned = false;
 		this.dodgeLength = 64; // amount you are pushed back by a successful hit
-		this.dodgeSpeed = 78;
+		this.dodgeSpeed = 100;
 		this.canAct = true;
+		this.dead = false;
 
 		this.facing = 1; // -1 left, 1 right
 
@@ -226,15 +231,15 @@ Crafty.c('FighterCore', {
 
 		this.strikes = {
 			strikeHigh: {
-				speed: 550,
+				speed: this.baseAttackSpeed * 1.25,
 				pushMod: 2
 			},
 			strikeMid: {
-				speed: 350,
+				speed: this.baseAttackSpeed * .75,
 				pushMod: .5
 			},
 			strikeLow: {
-				speed: 450,
+				speed: this.baseAttackSpeed,
 				pushMod: 1
 			}
 		};
@@ -304,7 +309,7 @@ Crafty.c('FighterCore', {
 	},
 
 	animationEnd: function(reel) {
-		if (reel.id != 'Idle') {
+		if (reel.id != 'Idle' && !this.stunned) {
 			this.animate('Idle', 1);
 			setTimeout(function() {
 				this.canAct = true;
@@ -367,9 +372,21 @@ Crafty.c('FighterCore', {
 			result = data.result;
 
 		if (result == 'dodged') {
-			this.tween({x: this.x+(fighter.dodgeLength*this.facing)}, this.leapSpeed);
+			console.log('dodged');
+			setTimeout(function() {
+				var targetX;
+				if (this.x > fighter.x) {
+					targetX = this.x - (this.x - (fighter.x - fighter.dodgeLength) - this.w);
+				} else {
+					targetX = this.x + ((fighter.x + fighter.dodgeLength) - this.x - this.w);
+				}
+				console.log(targetX, this.x, fighter.x);
+
+				this.tween({x: targetX}, this.leapSpeed);
+			}.bind(this), this.turnSpeed);
 		} else if (result == 'parried') {
-			console.log('got parried');
+			this.stunned = true;
+			setTimeout(function() {this.stunned = false}.bind(this), this.stunLength);
 		}
 	},
 
@@ -388,8 +405,39 @@ Crafty.c('FighterCore', {
 		this.tween(this.popStart, (this.leapSpeed/3)*2);
 	},
 
+	isFalling: function() {
+		if (this.facing == 1) {
+			if (this.x + this.w < Game.duelStage.x)
+				return true;
+		} else if (this.facing == -1) {
+			if (this.x > Game.duelStage.x + Game.duelStage.w)
+				return true;
+		}
+
+		return false;
+	},
+
+	handleFall: function() {
+		if (!this.isFalling()) {
+			return;
+		}
+
+		this.dead = true;
+
+		this.tween({
+			x: this.x + (this.facing * 32),
+			y: Game.viewportHeight() + this.h,
+			rotate: 180
+		}, 800);
+
+		setTimeout(function() {
+			Crafty.trigger('FighterLost', this);
+		}, 500);
+	},
+
 	update: function() {
-		if (!this.canAct) {
+		if (!this.canAct || this.stunned || this.dead) {
+			console.log("stunned?", this.stunned);
 			return;
 		} else if (this.getAction) {
 			var nextAction = this.getAction();

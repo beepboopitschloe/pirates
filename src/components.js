@@ -557,6 +557,7 @@ Crafty.c('PlayerCharacter', {
 	},
 
 	touchEnemy: function(enemy) {
+		World.save();
 		Crafty.scene('Duel', enemy);
 	},
 

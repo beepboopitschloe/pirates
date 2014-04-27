@@ -1,5 +1,13 @@
 Crafty.scene('Duel', function(enemy) {
 	// var layer = new NeuronLayer(3, 3);
+	var duelStage = Crafty.e('2D, Canvas, Color')
+						.attr({ x: Game.duelStage.x,
+							y: Game.duelStage.y,
+							w: Game.duelStage.w,
+							h: Game.duelStage.h })
+						.color('rgb(200, 50, 100)');
+
+	console.log(Game.duelStage);
 
 	var fighter = Crafty.e('FighterBrainPlayer');
 	fighter.attr({x:Game.viewportWidth()/2, y:Game.viewportHeight()/2});
@@ -33,6 +41,11 @@ Crafty.scene('Duel', function(enemy) {
 					.textFont({ size: '24px', family: 'Arial'})
 					.textColor('#990099', 1.0);	
 	});
+
+	this.resolve = this.bind('FighterLost', function(loser) {
+		Crafty.scene('Game');
+	});
 }, function() {
 	this.unbind('FighterAction', this.showHints);
+	this.unbind('FighterLost', this.resolve);
 });

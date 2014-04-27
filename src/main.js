@@ -165,6 +165,13 @@ Game = {
     	Crafty.viewport.width = this.viewportWidth();
     	Crafty.viewport.height = this.viewportHeight();
 
+	   	this.duelStage = {
+			x: this.viewportWidth()/8,
+			y: (this.viewportHeight()/3)*2,
+			w: (this.viewportWidth()/4)*3,
+			h: this.viewportHeight()/3
+		};
+
     	// set up notification feed
     	gui.init();
 
