@@ -432,7 +432,7 @@ Crafty.c('FighterCore', {
 
 		setTimeout(function() {
 			Crafty.trigger('FighterLost', this);
-		}, 500);
+		}.bind(this), 500);
 	},
 
 	update: function() {

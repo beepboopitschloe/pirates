@@ -43,6 +43,9 @@ Crafty.scene('Duel', function(enemy) {
 	});
 
 	this.resolve = this.bind('FighterLost', function(loser) {
+		if (loser.has && loser.has('FighterBrainPlayer')) {
+			Player.updateStatus({crew: Player.status.crew - 1});
+		}
 		Crafty.scene('Game');
 	});
 }, function() {

@@ -391,19 +391,13 @@ Crafty.c('Enemy', {
 	}
 });
 
-Crafty.c('PlayerCharacter', {
+Crafty.c('PlayerShip', {
 	init: function() {
 		this.requires('Actor, Keyboard, spr_player')
 			.bind('EnterFrame', this.update)
 			.bind('MoveFinished', this.finishMove);
 
 		this.controlsEnabled = true;
-
-		this.updateStatus({
-			money: 0,
-			food: 1000,
-			crew: 10
-		});
 	},
 
 	update: function() {
@@ -481,9 +475,9 @@ Crafty.c('PlayerCharacter', {
 
 	money: function(num) {
 		if (num === undefined) {
-			return this.status.money;
+			return Player.status.money;
 		} else {
-			this.updateStatus({
+			Player.updateStatus({
 				money: num
 			});
 		}
@@ -491,9 +485,9 @@ Crafty.c('PlayerCharacter', {
 
 	food: function(num) {
 		if (num === undefined) {
-			return this.status.food;
+			return Player.status.food;
 		} else {
-			this.updateStatus({
+			Player.updateStatus({
 				food: num
 			});
 		}
@@ -501,35 +495,12 @@ Crafty.c('PlayerCharacter', {
 
 	crew: function(num) {
 		if (num === undefined) {
-			return this.status.crew;
+			return Player.status.crew;
 		} else {
-			this.updateStatus({
+			Player.updateStatus({
 				crew: num
 			});
 		}
-	},
-
-	updateStatus: function(obj) {
-		if (this.status === undefined) {
-			this.status = {
-				money: 0,
-				food: 0,
-				crew: 0
-			}
-		}
-
-		this.status.money = obj.money !== undefined? Math.floor(obj.money)
-								: this.status.money;
-		this.status.food = obj.food !== undefined? Math.floor(obj.food)
-								: this.status.food;
-		this.status.crew = obj.crew !== undefined? Math.floor(obj.crew)
-								: this.status.crew;
-
-		gui.status({
-			money: this.status.money,
-			food: this.status.food,
-			crew: this.status.crew
-		});
 	},
 
 	eatFood: function() {

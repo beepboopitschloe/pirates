@@ -5,6 +5,10 @@ Crafty.scene('Game', function() {
 		World.createNew();
 	}
 
+	if (!Player.ready) {
+		Player.init();
+	}
+
 	// this.parallax = Crafty.e('Parallax').attr({
 	// 	x: -Crafty.viewport.x - Game.map_grid.tile.width,
 	// 	y: -Crafty.viewport.y - Game.map_grid.tile.height

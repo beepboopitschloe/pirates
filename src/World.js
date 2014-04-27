@@ -501,7 +501,7 @@ World = {
 			this.playerSpawn = {x: placeX, y: placeY};
 		}
 
-		Game.player = Crafty.e('PlayerCharacter').at(placeX, placeY);
+		Game.player = Crafty.e('PlayerShip').at(placeX, placeY);
 
 		Crafty.viewport.centerOn(Game.player, 0);
 		Crafty.viewport.follow(Game.player, 0, 0);
