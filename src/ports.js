@@ -6,6 +6,12 @@ Port = function(entity) {
 	entity.metaDef = this;
 
 	this.visited = false;
+	this.hasPrisoner = true;
+}
+
+Port.prototype.setEntity = function(entity) {
+	this.entity = entity;
+	entity.metaDef = this;
 }
 
 Port.prototype.beVisited = function() {

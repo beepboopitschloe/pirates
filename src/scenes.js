@@ -141,7 +141,9 @@ Crafty.scene('Loading', function() {
 			'img/oceanTile.png',
 			'gui/button.png',
 			'gui/selector.png',
-			'gui/title.png'], function() {
+			'gui/title.png',
+			'gui/port.png',
+			'gui/store.png'], function() {
 		Crafty.sprite(32, 'img/environment.gif', {
 			spr_fortress: [0, 0],
 			spr_island: [1, 0],
@@ -164,6 +166,14 @@ Crafty.scene('Loading', function() {
 
 		Crafty.sprite(640, 480, 'gui/title.png', {
 			gui_title: [0, 0]
+		});
+
+		Crafty.sprite(640, 480, 'gui/port.png', {
+			gui_port: [0, 0]
+		});
+
+		Crafty.sprite(640, 480, 'gui/store.png', {
+			gui_store: [0, 0]
 		});
 
 		Crafty.scene('MainMenu');

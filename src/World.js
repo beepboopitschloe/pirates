@@ -130,6 +130,11 @@ World = {
 
 		this.generate();
 		this.spawnPlayer();
+
+		// set up ports
+		for (var i=0; i<this.portEntities.length; i++) {
+			Game.ports.push(new Port(this.portEntities[i]));
+		}
 	},
 
 	recreate: function() {
@@ -152,6 +157,11 @@ World = {
 		}
 
 		this.spawnPlayer(playerLoc);
+
+		// set up ports
+		for (var i=0; i<this.portEntities.length; i++) {
+			Game.ports[i].setEntity(this.portEntities[i]);
+		}
 	},
 
 	save: function() {
@@ -441,8 +451,6 @@ World = {
 
 			this.portEntities.push(portEntity);
 			Game.addObject(portEntity);
-
-			Game.ports.push(new Port(portEntity));
 		}
 
 		// now stuff all this data into an island and add it to the map

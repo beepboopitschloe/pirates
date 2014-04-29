@@ -155,6 +155,16 @@ Game = {
 		return (!solid || port);
 	},
 
+	numPrisonersLeft: function() {
+		var total = 0;
+		for (var i=0; i<this.ports.length; i++) {
+			if (this.ports[i].hasPrisoner)
+				total++;
+		}
+
+		return total;
+	},
+
 	start: function() {
 		// start Crafty
 		Crafty.init(Game.width(), Game.height(), "cr-stage");

@@ -150,7 +150,8 @@ Crafty.scene('PauseMenu', function() {
 });
 
 Crafty.scene('PortMenu', function(port) {
-	console.log(port);
+	Crafty.e('2D, Canvas, gui_port')
+		.attr({x: 0, y: 0});
 
 	this.keyHandler = Crafty.e('Keyboard')
 		.bind('KeyDown', function() {
@@ -166,7 +167,7 @@ Crafty.scene('PortMenu', function(port) {
 			Crafty.scene('PortStore', this);
 		}
 	}, {
-		text: 'Look for your crewmate',
+		text: 'Look for trouble',
 		size: '16px',
 		action: function() {
 			Crafty.scene('Duel', Crafty.e('Enemy'))
@@ -179,23 +180,47 @@ Crafty.scene('PortMenu', function(port) {
 		}
 	}];
 
-	menu = new Menu(Game.viewportWidth()/8, Game.viewportHeight()/2, options);
+	console.log(port.hasPrisoner);
+	if (port.hasPrisoner) {
+		options.unshift({
+			text: 'Look for your crewmate',
+			size: '16px',
+			action: function() {
+				Crafty.scene('PrisonerDuel', port);
+			}
+		});
+	}
+
+	menu = new Menu(Game.viewportWidth()/8, Game.viewportHeight()/3 + 64, options);
 });
 
-Crafty.scene('PortStore', function() {
+Crafty.scene('PortStore', function(port) {
+	Crafty.e('2D, Canvas, gui_store')
+		.attr({x: 0, y: 0});
+
 	var options = [{
 		text: 'Buy 100 food for $100',
 		size: '16px',
 		action: function() {
-			Player.food(Player.food()+100);
-			Player.money(Player.money()-100);
+			if (Player.money() >= 100) {
+				Player.food(Player.food()+100);
+				Player.money(Player.money()-100);
+			}
 		}
 	}, {
 		text: 'Hire 1 crew for $50',
 		size: '16px',
 		action: function() {
-			Player.crew(Player.crew()+1);
-			Player.money(Player.money()-50);
+			if (Player.money() >= 50) {
+				Player.crew(Player.crew()+1);
+				Player.money(Player.money()-50);
+			}
+		}
+	}, {
+		text: 'Back to port',
+		size: '16px',
+		action: function() {
+			Crafty.scene('PortMenu', port);
 		}
 	}, {
 		text: 'Return to sea',
@@ -205,5 +230,5 @@ Crafty.scene('PortStore', function() {
 		}
 	}];
 
-	menu = new Menu(Game.viewportWidth()/8, Game.viewportHeight()/2, options);
+	menu = new Menu(Game.viewportWidth()/8, Game.viewportHeight()/3 + 64, options);
 })
