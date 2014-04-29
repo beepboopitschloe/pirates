@@ -133,7 +133,7 @@ World = {
 
 		// set up ports
 		for (var i=0; i<this.portEntities.length; i++) {
-			Game.ports.push(new Port(this.portEntities[i]));
+			Game.ports[i] = new Port(this.portEntities[i]);
 		}
 	},
 
@@ -161,6 +161,7 @@ World = {
 		// set up ports
 		for (var i=0; i<this.portEntities.length; i++) {
 			Game.ports[i].setEntity(this.portEntities[i]);
+			console.log(Game.ports[i].hasPrisoner);
 		}
 	},
 
@@ -183,6 +184,14 @@ World = {
 			console.log(te);
 		}
 
+		var portData = [];
+		for (var i=0; i<Game.ports.length; i++) {
+			// console.log("Storing port", i, Game.ports[i].hasPrisoner);
+			portData[i] = Game.ports[i].hasPrisoner;
+		}
+
+		Crafty.storage("Game:ports", portData);
+
 		// store the player
 		Crafty.storage("Player:at", Game.player.at());
 
@@ -203,6 +212,8 @@ World = {
 			console.log(te);
 		}
 
+		Crafty.storage.remove("Game:ports");
+
 		// store the player
 		Crafty.storage.remove("Player:at");
 
@@ -218,6 +229,15 @@ World = {
 					console.log(key, this.settings[key]);
 					this.settings[key] = Crafty.storage("World:settings:" + key);
 				}
+			}
+		}
+
+		if (Game.ports.length == 0) {
+			var p = Crafty.storage("Game:ports");
+			for (var i=0; i<p.length; i++) {
+				// console.log("loading port", i, p[i]);
+				Game.ports[i] = new Port();
+				Game.ports[i].hasPrisoner = p[i];
 			}
 		}
 		
