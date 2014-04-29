@@ -109,6 +109,9 @@ Menu.prototype.select = function(optNum) {
 }
 
 Crafty.scene('MainMenu', function() {
+	Crafty.e('2D, Canvas, gui_title')
+		.attr({x: 0, y: 0});
+
 	var options = [{
 		text: 'New Game',
 		action: function() {
@@ -125,6 +128,9 @@ Crafty.scene('MainMenu', function() {
 });
 
 Crafty.scene('PauseMenu', function() {
+	Crafty.e('2D, Canvas, gui_title')
+		.attr({x: 0, y: 0});
+
 	var options = [{
 		text: 'Resume',
 		action: function() {

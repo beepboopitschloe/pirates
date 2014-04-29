@@ -11,6 +11,8 @@ Crafty.scene('Game', function(load) {
 		Player.init();
 	}
 
+	Crafty.background('rgb(125, 123, 249)');
+
 	// this.parallax = Crafty.e('Parallax').attr({
 	// 	x: -Crafty.viewport.x - Game.map_grid.tile.width,
 	// 	y: -Crafty.viewport.y - Game.map_grid.tile.height
@@ -161,7 +163,8 @@ Crafty.scene('Loading', function() {
 			'img/playerFighter.png',
 			'img/oceanTile.png',
 			'gui/button.png',
-			'gui/selector.png'], function() {
+			'gui/selector.png',
+			'gui/title.png'], function() {
 		Crafty.sprite(32, 'img/environment.gif', {
 			spr_rock: [0, 0],
 			spr_island: [1, 0],
@@ -180,6 +183,10 @@ Crafty.scene('Loading', function() {
 
 		Crafty.sprite(27, 28, 'gui/selector.png', {
 			gui_selector: [0, 0]
+		});
+
+		Crafty.sprite(640, 480, 'gui/title.png', {
+			gui_title: [0, 0]
 		});
 
 		Crafty.scene('MainMenu');
