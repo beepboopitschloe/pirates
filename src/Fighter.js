@@ -90,11 +90,11 @@ Crafty.c('FighterBrainRandom', {
 		this.requires('FighterCore');
 
 		this.speed = 250;
-		this.baseAttackSpeed = 500;
+		this.baseAttackSpeed = 625;
 
 		this.setupSpeed();
 
-		setInterval(this.update.bind(this), this.speed);
+		this.interval = setInterval(this.update.bind(this), this.speed);
 	},
 
 	respond: function(data) {
@@ -109,6 +109,13 @@ Crafty.c('FighterBrainRandom', {
 
 	controlShift: function() {
 		this.controlsCombat = !this.controlsCombat;
+		clearInterval(this.interval);
+
+		if (this.controlsCombat) {
+			this.interval = setInterval(this.update.bind(this), this.speed);
+		} else {
+			this.interval = setInterval(this.update.bind(this), 500); // 500 ms is the speed of a parry animation
+		}
 	},
 
 	getAction: function() {

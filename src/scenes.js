@@ -140,11 +140,7 @@ Crafty.scene('GameOver', function(win) {
 		.css("text-align", "center");
 
 	this.restartGame = this.bind('KeyDown', function() {
-		Crafty.scene('Game');
-		gui.notify({
-			text: 'Game restarted.',
-			type: 'success'
-		});
+		window.location.reload(true);
 	});
 
 	this.clickHandler = this.bind('Click', function(e) {

@@ -23,9 +23,10 @@ Crafty.scene('Duel', function(enemy) {
 	this.resolve = this.bind('FighterLost', function(loser) {
 		if (loser.has && loser.has('FighterBrainPlayer')) {
 			Player.crew(Player.crew() - 1);
-		} else if (loser.has && loser.has('FighterCore')) {
+		} else {
 			Player.money(Player.money() + 75);
 		}
+		
 		Crafty.scene('Game', true);
 	});
 }, function() {
