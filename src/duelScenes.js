@@ -7,8 +7,6 @@ Crafty.scene('Duel', function(enemy) {
 							h: Game.duelStage.h })
 						.color('rgb(200, 50, 100)');
 
-	console.log(Game.duelStage);
-
 	var fighter = Crafty.e('FighterBrainPlayer');
 	fighter.attr({x:Game.viewportWidth()/2, y:Game.viewportHeight()/2});
 	fighter.x -= fighter.w - 4;

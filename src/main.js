@@ -26,7 +26,7 @@ Game = {
 		}
 	},
 
-	worldSeed: "Test",
+	worldSeed: "default",
 
 	player: null,
 	enemies: [],
@@ -154,9 +154,6 @@ Game = {
 	},
 
 	start: function() {
-		// clear the saved world (for testing purposes)
-		World.unsave();
-
 		// start Crafty
 		Crafty.init(Game.width(), Game.height(), "cr-stage");
 		// Crafty.timer.FPS(32);

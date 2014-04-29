@@ -16,6 +16,8 @@ Player = {
 			}
 		}
 
+		obj = obj || {};
+
 		this.status.money = obj.money !== undefined? Math.floor(obj.money)
 								: this.status.money;
 		this.status.food = obj.food !== undefined? Math.floor(obj.food)

@@ -72,13 +72,14 @@ World = {
 		islandToOceanRatio: 1/10,
 
 		playerSpawn: { x: 0, y: 0 },
+
+		seed: null
 	},
 
 	worldMap: [],
 	islands: [],
 	ports: [],
 
-	seed: null,
 	rng: Math.random,
 
 	mapModal: $('#world-map-modal'),
@@ -98,8 +99,9 @@ World = {
 			}
 		}
 
-		this.numIslands = Math.floor((this.worldWidth * this.worldHeight * this.islandToOceanRatio)
-							+ (this.rng() * 3) - 1);
+		// this.numIslands = Math.floor((this.worldWidth * this.worldHeight * this.islandToOceanRatio)
+		// 					+ (this.rng() * 3) - 1);
+		this.numIslands = 5;
 		console.log(this.numIslands, 'islands');
 	},
 
@@ -164,7 +166,8 @@ World = {
 			for (key in this.settings) {
 				if (typeof this.settings[key] != "function") {
 					console.log("Storing", key, "as World:settings:" + key);
-					Crafty.storage("World:settings:"+key, this[key]);
+					Crafty.storage("World:settings:" + key, this[key]);
+					console.log(Crafty.storage("World:settings:" + key));
 				}
 			}
 		} catch(te) {
@@ -184,7 +187,7 @@ World = {
 			for (key in this.settings) {
 				if (typeof this.settings[key] != "function") {
 					console.log("Deleting World:settings:" + key + " from storage");
-					Crafty.storage.remove("World:settings:"+key);
+					Crafty.storage.remove("World:settings:" + key);
 				}
 			}
 		} catch(te) {
@@ -203,8 +206,10 @@ World = {
 		if (Crafty.storage("World:stored")) {
 			for (key in this.settings) {
 				if (typeof this.settings[key] != "function") {
+					console.log(key, this.settings[key]);
 					console.log("Loading", key, "from World:settings:" + key);
-					this.settings[key] = Crafty.storage("World:settings:"+key);
+					this.settings[key] = Crafty.storage("World:settings:" + key);
+					console.log(key, Crafty.storage("World:settings:" + key), this.settings[key]);
 				}
 			}
 		}
@@ -457,7 +462,7 @@ World = {
 			}
 		}
 
-		for (var i=0; i<this.numIslands-1; i++) {
+		for (var i=0; i<this.numIslands; i++) {
 			do {
 				x = Math.floor(this.rng() * this.worldWidth);
 				y = Math.floor(this.rng() * this.worldHeight);

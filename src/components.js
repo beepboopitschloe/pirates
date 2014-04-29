@@ -504,7 +504,7 @@ Crafty.c('PlayerShip', {
 	},
 
 	eatFood: function() {
-		this.food(this.food() + this.crew()/2);
+		this.food(this.food() - this.crew()/2);
 
 		if (this.food() <= 0) {
 			gui.notify({

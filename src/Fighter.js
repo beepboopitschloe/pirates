@@ -133,7 +133,7 @@ Crafty.c('FighterBrainPlayer', {
 	handleKeys: function() {
 		if (this.canTakeInput) {
 			if (this.isDown('G'))
-				Crafty.scene('Game');
+				Crafty.scene('Game', true);
 			
 			this.update();
 			this.canTakeInput = false;

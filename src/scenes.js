@@ -1,7 +1,9 @@
 Crafty.scene('Game', function(load) {
 	if (load && Crafty.storage("World:stored")) {
+		console.log('Loading');
 		World.load();
 	} else {
+		World.unsave();
 		World.createNew();
 	}
 
@@ -155,7 +157,8 @@ Crafty.scene('Loading', function() {
 	Crafty.load(['img/environment.gif',
 			'img/playerFighter.png',
 			'img/oceanTile.png',
-			'gui/button.png'], function() {
+			'gui/button.png',
+			'gui/selector.png'], function() {
 		Crafty.sprite(32, 'img/environment.gif', {
 			spr_rock: [0, 0],
 			spr_island: [1, 0],
@@ -170,6 +173,10 @@ Crafty.scene('Loading', function() {
 		Crafty.sprite(190, 51, 'gui/button.png', {
 			gui_btn: [0, 0],
 			gui_btnPressed: [0, 1]
+		});
+
+		Crafty.sprite(27, 28, 'gui/selector.png', {
+			gui_selector: [0, 0]
 		});
 
 		Crafty.scene('MainMenu');
