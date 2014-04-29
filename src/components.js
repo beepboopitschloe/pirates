@@ -1,3 +1,83 @@
+// Parallax component derived from code by coder78
+// http://www.arg3.com/blog/2012/11/17/crafting-a-game-with-craftyjs
+Crafty.c("Parallax", {
+    init: function() {
+        this.requires("2D, Canvas, Image")
+        	.attr({
+        		w: Crafty.viewport.width + Game.map_grid.tile.width*2,
+        		h: Crafty.viewport.height + Game.map_grid.tile.height*2,
+        		z: -15
+        	})
+        	.image('img/oceanTile.png', 'repeat');
+
+        this.speed = 4;
+    },
+
+    setImage: function(img) {
+    	this.image(img, 'repeat');
+    },
+
+    scrollOn: function(event) {
+    	this.bind(event, this.scroll);
+    },
+
+    setSpeed: function(speed) {
+        this.speed = speed;
+        return this;
+    },
+
+    autoScroll: function() {
+        this.bind("EnterFrame", function() {
+            this.scroll();
+        });
+        this.autoScrolling = true;
+    },
+
+    getSpeed: function() {
+        return this.speed;
+    },
+
+    scroll: function() {
+    	this.previousX = this.x;
+    	this.previousY = this.y;
+
+    	this.x = -Crafty.viewport.x - Game.map_grid.tile.width;
+    	this.y = -Crafty.viewport.y - Game.map_grid.tile.height;
+
+    	// check if moving left or right
+    	if (this.x > this.previousX) {
+    		console.log('moving right');
+    		this.x += this.speed + Game.map_grid.tile.width/2;
+    	} else if (this.x < this.previousX) {
+    		this.x -= this.speed;
+    	}
+
+    	// check if moving up or down
+    	if (this.y > this.previousY) {
+    		this.y += this.speed;
+    	} else if (this.y < this.previousY) {
+    		this.y -= this.speed;
+    	}
+
+    	// check to see if looping
+        if (this.x + this.w - Game.map_grid.tile.width < -Crafty.viewport.x) {
+        	console.log('falling behind on left');
+            this.x = Crafty.viewport.width + -Crafty.viewport.x;
+        }
+        else if (this.x > Crafty.viewport.width + -Crafty.viewport.x) {
+        	console.log('getting ahead on right');
+            this.x = -this.w;
+        }
+
+        if (this.y + this.h - Game.map_grid.tile.height < -Crafty.viewport.y) {
+            this.y = Crafty.viewport.height + -Crafty.viewport.y;
+        }
+        else if (this.y > Crafty.viewport.height + -Crafty.viewport.y) {
+            this.y = -this.h;
+        }
+    }
+});
+
 Crafty.c('Grid', {
 	init: function() {
 		this.attr({
@@ -34,6 +114,9 @@ Crafty.c('Grid', {
 		if (x === undefined && y === undefined) {
 			return Game.toGrid(this.x, this.y);
 		} else {
+			if (x >= 0 && y >= 0
+				&& x < Game.map_grid.width
+				&& y < Game.map_grid.height)
 			this.attr({
 				x: Game.findX(x),
 				y: Game.findY(y)
@@ -44,12 +127,178 @@ Crafty.c('Grid', {
 	}
 });
 
+Crafty.c('MapObject', {
+	init: function() {
+		this.requires('2D, Canvas, Grid, Mouse')
+			.bind('Click', this.clickHandler);
+	},
+
+	clickHandler: function(e) {
+		if (e.mouseButton == Crafty.mouseButtons.LEFT) {
+			console.log(this.at().x, this.at().y,
+					Game.neighbors(this.at().x, this.at().y));
+		}
+	}
+});
+
+Crafty.c('MapQuad', {
+	init: function() {
+		this.requires('Grid');
+
+		this.quadrants = {
+			upLeft: null,
+			upRight: null,
+			downLeft: null,
+			downRight: null
+		};
+
+		this.quadrantCoords = {
+			upLeft: {
+				x: this.x,
+				y: this.y
+			},
+			upRight: {
+				x: this.x + (this.w/2),
+				y: this.y
+			},
+			downLeft: {
+				x: this.x,
+				y: this.y + (this.h/2)
+			},
+			downRight: {
+				x: this.x + (this.w/2),
+				y: this.y + (this.h/2)
+			}
+		}
+	},
+
+	// TODO: Change these methods to take in a component list and use that to create the object,
+	//		rather than taking in an actual object.
+	setQuadrants: function(obj) {
+		var toCreate = {};
+		toCreate.upLeft = obj.upLeft? obj.upLeft : this.quadrants.upLeft;
+		toCreate.upRight = obj.upRight? obj.upRight : this.quadrants.upRight;
+		toCreate.downLeft = obj.downLeft? obj.downLeft : this.quadrants.downLeft;
+		toCreate.downRight = obj.downRight? obj.downRight : this.quadrants.downRight;
+
+		this.removeComponent('Solid');
+		for (key in toCreate) {
+			this.quadrants[key] = Crafty.e(toCreate[key]);
+			if (!this.has('Solid') && this.quadrants[key].has('Solid'))
+				this.addComponent('Solid');
+		}
+
+		return this.enforceQuadrantRestrictions();
+	},
+
+	setAllQuadrants: function(obj) {
+		for (key in this.quadrants) {
+			this.quadrants[key] = obj;
+		}
+
+		return this.enforceQuadrantRestrictions();
+	},
+
+	enforceQuadrantRestrictions: function() {
+		this.quadrantCoords = {
+			upLeft: {
+				x: this.x,
+				y: this.y
+			},
+			upRight: {
+				x: this.x + (Game.map_grid.tile.width/2),
+				y: this.y
+			},
+			downLeft: {
+				x: this.x,
+				y: this.y + (Game.map_grid.tile.height/2)
+			},
+			downRight: {
+				x: this.x + (Game.map_grid.tile.width/2),
+				y: this.y + (Game.map_grid.tile.height/2)
+			}
+		}
+
+		// console.log("before", this.quadrants);
+		for (key in this.quadrants) {
+			// console.log(key);
+
+			var q = this.quadrants[key];
+
+			if (!q || !q.has || !q.has('MapObject')) {
+				this.quadrants[key] = null;
+			} else {
+				// console.log("coords", key, this.quadrantCoords, this.quadrantCoords[key]);
+				q.attr(this.quadrantCoords[key]);
+				q.attr({
+					w: this.w/2,
+					h: this.h/2
+				});
+			}
+		}
+		// console.log("after", this.quadrants);
+
+		/* test input:
+		var asdf = Crafty.e('MapQuad').at(1,1).setQuadrants({
+			upLeft: Crafty.e('Sand'),
+			upRight: Crafty.e('Grass'),
+			downLeft: Crafty.e('Rock'),
+			downRight: Crafty.e('Island')
+		});
+		*/
+
+		return this;
+	}
+});
+
+Crafty.c('Rock', {
+	init: function() {
+		this.requires('MapObject, spr_rock, Solid');
+	}
+});
+
+Crafty.c('Island', {
+	init: function() {
+		this.requires('MapObject, spr_island, Solid');
+	}
+});
+
+Crafty.c('Grass', {
+	init: function() {
+		this.requires('MapObject, Color, Solid')
+			.color('rgb(100, 218, 100)');
+	}
+});
+
+Crafty.c('Sand', {
+	init: function() {
+		this.requires('MapObject, Color, Solid')
+			.color('#EDE291');
+	}
+});
+
+Crafty.c('Port', {
+	init: function() {
+    	this.requires('Actor, spr_port');
+
+    	this.collected = false;
+  	},
+ 
+	collect: function() {
+		if (!this.collected) {
+	  		this.collected = true;
+	  		this.destroy();
+	  		Crafty.trigger('PortVisited', this);
+	  	}
+	}
+});
+
 Crafty.c('Actor', {
 	init: function() {
-		this.requires('2D, Canvas, Grid, Tween');
+		this.requires('MapObject, Tween');
 
-		this.attr({
-			speed: 200,
+		this.attr({	
+			speed: 100,
 			moveQueue: {
 				full: false,
 				target: null
@@ -93,33 +342,6 @@ Crafty.c('Actor', {
 	},
 });
 
-Crafty.c('Rock', {
-	init: function() {
-		this.requires('Actor, spr_rock, Solid');
-	}
-});
-
-Crafty.c('Island', {
-	init: function() {
-		this.requires('Actor, spr_island, Solid');
-	}
-});
-
-Crafty.c('Port', {
-	init: function() {
-    	this.requires('Actor, spr_port');
-
-    	this.collected = false;
-  	},
- 
-	collect: function() {
-		if (!this.collected) {
-	  		this.collected = true;
-	  		this.destroy();
-	  		Crafty.trigger('PortVisited', this);
-	  	}
-	}
-});
 
 Crafty.c('Enemy', {
 	init: function() {
@@ -169,18 +391,13 @@ Crafty.c('Enemy', {
 	}
 });
 
-Crafty.c('PlayerCharacter', {
+Crafty.c('PlayerShip', {
 	init: function() {
 		this.requires('Actor, Keyboard, spr_player')
 			.bind('EnterFrame', this.update)
-			.bind('PortVisited', function() { console.log("visit") })
 			.bind('MoveFinished', this.finishMove);
 
-		this.updateStatus({
-			money: 0,
-			food: 1000,
-			crew: 10
-		});
+		this.controlsEnabled = true;
 	},
 
 	update: function() {
@@ -198,14 +415,20 @@ Crafty.c('PlayerCharacter', {
 		} else if (this.isDown('D')) {
 			target.x = 1;
 			target.y = 0;
+		} else if (this.isDown('T')) {
+			World.save();
+			Crafty.scene('Duel', Crafty.e('Enemy'));
 		} else if (this.isDown('V')) {
 			Crafty.scene('GameOver', true);
+		} else if (this.isDown('L')) {
+			Crafty.scene('GameOver', false);
 		}
 
-		if (target.x !== undefined) {
+		if (target.x !== undefined && this.controlsEnabled) {
 			if (this.canMove) {
 				this.eatFood();
 
+				Crafty.trigger('PlayerStartMove');
 				this.tweenMove(target.x, target.y);
 			} else if (this.moveQueue.target
 						&& this.moveQueue.target.x != target.x
@@ -218,6 +441,7 @@ Crafty.c('PlayerCharacter', {
 
 	finishMove: function() {
 		this.checkSquare();
+		Crafty.trigger('PlayerFinishMove');
 	},
 
 	checkSquare: function() {
@@ -233,11 +457,27 @@ Crafty.c('PlayerCharacter', {
 		}
 	},
 
+	enableControls: function() {
+		this.controlsEnabled = true;
+	},
+
+	disableControls: function() {
+		this.controlsEnabled = false;
+	},
+
+	toggleControls: function() {
+		if (this.controlsEnabled) {
+			this.controlsEnabled = false;
+		} else {
+			this.controlsEnabled = true;
+		}
+	},
+
 	money: function(num) {
 		if (num === undefined) {
-			return this.status.money;
+			return Player.status.money;
 		} else {
-			this.updateStatus({
+			Player.updateStatus({
 				money: num
 			});
 		}
@@ -245,9 +485,9 @@ Crafty.c('PlayerCharacter', {
 
 	food: function(num) {
 		if (num === undefined) {
-			return this.status.food;
+			return Player.status.food;
 		} else {
-			this.updateStatus({
+			Player.updateStatus({
 				food: num
 			});
 		}
@@ -255,39 +495,16 @@ Crafty.c('PlayerCharacter', {
 
 	crew: function(num) {
 		if (num === undefined) {
-			return this.status.crew;
+			return Player.status.crew;
 		} else {
-			this.updateStatus({
+			Player.updateStatus({
 				crew: num
 			});
 		}
 	},
 
-	updateStatus: function(obj) {
-		if (this.status === undefined) {
-			this.status = {
-				money: 0,
-				food: 0,
-				crew: 0
-			}
-		}
-
-		this.status.money = obj.money !== undefined? Math.floor(obj.money)
-								: this.status.money;
-		this.status.food = obj.food !== undefined? Math.floor(obj.food)
-								: this.status.food;
-		this.status.crew = obj.crew !== undefined? Math.floor(obj.crew)
-								: this.status.crew;
-
-		gui.status({
-			money: this.status.money,
-			food: this.status.food,
-			crew: this.status.crew
-		});
-	},
-
 	eatFood: function() {
-		this.food(this.food() - this.crew()/2);
+		this.food(this.food() + this.crew()/2);
 
 		if (this.food() <= 0) {
 			gui.notify({
@@ -311,13 +528,8 @@ Crafty.c('PlayerCharacter', {
 	},
 
 	touchEnemy: function(enemy) {
-		if (Math.random() > 0.5) {
-			this.destroy();
-			Crafty.scene('GameOver', false);
-		} else {
-			enemy.destroy();
-			Crafty.scene('GameOver', true);
-		}
+		World.save();
+		Crafty.scene('Duel', enemy);
 	},
 
 	// Registers a stop-movement function to be called when
