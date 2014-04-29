@@ -9,13 +9,13 @@ Crafty.c('MenuItem', {
 		this.text = Crafty.e('2D, DOM, Text')
 						.attr({
 							x: this.x,
-							y: this.y+6,
+							y: this.y+10,
 							w: this.w,
 							h: this.h
 						})
 						.text(text);
 
-		this.text.textFont({ size: '24px', family: 'KenPixel Mini' });
+		this.text.textFont({ size: '24px', family: 'Courier', weight: 'bold' });
 
 		return this;
 	},
