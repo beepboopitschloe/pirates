@@ -141,7 +141,7 @@ Crafty.scene('Loading', function() {
 			'img/oceanTile.png',
 			'gui/button.png',
 			'gui/selector.png',
-			'gui/title.png',
+			'gui/Title.png',
 			'gui/port.png',
 			'gui/store.png'], function() {
 		Crafty.sprite(32, 'img/environment.gif', {
@@ -164,7 +164,7 @@ Crafty.scene('Loading', function() {
 			gui_selector: [0, 0]
 		});
 
-		Crafty.sprite(640, 480, 'gui/title.png', {
+		Crafty.sprite(640, 480, 'gui/Title.png', {
 			gui_title: [0, 0]
 		});
 
