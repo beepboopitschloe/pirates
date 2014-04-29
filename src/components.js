@@ -286,6 +286,10 @@ Crafty.c('Port', {
 Crafty.c('PirateFortress', {
 	init: function() {
 		this.requires('Actor, spr_fortress');
+	},
+
+	spawnEnemy: function() {
+		Crafty.e('Enemy').at(this.at().x, this.at().y);
 	}
 })
 
@@ -342,12 +346,10 @@ Crafty.c('Actor', {
 Crafty.c('Enemy', {
 	init: function() {
 		this.requires('Actor, spr_player')
+			.bind('PlayerFinishMove', this.update)
 			.bind('MoveFinished', this.checkSquare);
 
-		var that = this;
-		this.updateLoop = setInterval(function() {
-			that.update()
-		}, 750);
+		this.turn = true;
 	},
 
 	checkSquare: function() {
@@ -355,6 +357,12 @@ Crafty.c('Enemy', {
 	},
 
 	update: function() {
+		if (!this.turn) {
+			this.turn = true;
+			return;
+		} else {
+			this.turn = false;
+		}
 		target = {
 			x:0,
 			y:0
@@ -447,8 +455,7 @@ Crafty.c('PlayerShip', {
 		for (var i=0; i<objArray.length; i++) {
 			if (objArray[i].has('Port')) {
 				this.visitPort(objArray[i]);
-			}
-			else if (objArray[i].has('Enemy')) {
+			} else if (objArray[i].has('Enemy')) {
 				this.touchEnemy(objArray[i]);
 			} else if (objArray[i].has('PirateFortress')) {
 				Crafty.scene('PirateFortress');

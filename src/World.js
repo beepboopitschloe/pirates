@@ -500,7 +500,8 @@ World = {
 		placeX = (chunk.x*this.chunkWidth) + Math.floor(this.rng()*this.chunkWidth);
 		placeY = (chunk.y*this.chunkHeight) + Math.floor(this.rng()*this.chunkHeight);
 
-		Game.addObject(Crafty.e('PirateFortress').at(placeX, placeY));
+		Game.pirateFortress = Crafty.e('PirateFortress').at(placeX, placeY);
+		Game.addObject(Game.pirateFortress);
 
 		// chunk is no longer empty
 		chunk.empty = false;

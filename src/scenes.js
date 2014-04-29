@@ -53,6 +53,15 @@ Crafty.scene('Game', function(load) {
 		if (Game.enemies.length < Game.maxEnemies && Math.random() > this.spawnRate) {
 			World.spawnEnemy();
 		}
+
+		fortLoc = Game.pirateFortress.at();
+		pLoc = Game.player.at();
+		if (fortLoc.x > pLoc.x - World.chunkWidth * 2
+				|| fortLoc.x < pLoc.x + World.chunkWidth * 2
+				|| fortLoc.y > pLoc.y - World.chunkHeight * 2
+				|| fortLoc.y < pLoc.y + World.chunkHeight * 2) {
+			Game.pirateFortress.spawnEnemy();
+		}
 	});
 
 	this.showVictory = this.bind('PortVisited', function() {
@@ -70,34 +79,6 @@ Crafty.scene('Game', function(load) {
 			World.toggleMapModal();
 		}
 	})
-
-	// this.cameraControl = this.bind('PlayerStartMove', function() {
-	// 	var viewportLeft = -Crafty.viewport.x;
-	// 	var viewportRight = (-Crafty.viewport.x) + (Crafty.viewport.width/Crafty.viewport._scale);
-	// 	var viewportTop = -Crafty.viewport.y;
-	// 	var viewportBottom = (-Crafty.viewport.y) + (Crafty.viewport.height/Crafty.viewport._scale);
-
-	// 	var minX = viewportLeft + ((Crafty.viewport.width/Crafty.viewport._scale)/3);
-	// 	var minY = viewportTop + ((Crafty.viewport.height/Crafty.viewport._scale)/3);
-	// 	var maxX = viewportRight - ((Crafty.viewport.width/Crafty.viewport._scale)/3);
-	// 	var maxY = viewportBottom - ((Crafty.viewport.width/Crafty.viewport._scale)/3);
-
-	// 	if (Game.player.x < minX) {
-	// 		// Crafty.viewport.scroll('x',
-	// 		// 	-(Game.player.x + (Game.player.w / 2) - (Crafty.viewport.width / 2)));
-	// 		Crafty.viewport.pan('x', -Game.map_grid.tile.width, Game.player.speed);
-	// 	} else if (Game.player.x+Game.player.w > maxX) {
-	// 		Crafty.viewport.pan('x', Game.map_grid.tile.width, Game.player.speed);
-	// 	}
-
-	// 	if (Game.player.y < minY) {
-	// 		// Crafty.viewport.scroll('y',
-	// 		// 	-(Game.player.y + (Game.player.h / 2) - (Crafty.viewport.height / 2)));
-	// 		Crafty.viewport.pan('y', -Game.map_grid.tile.height, Game.player.speed);
-	// 	} else if (Game.player.y > maxY) {	
-	// 		Crafty.viewport.pan('y', Game.map_grid.tile.height, Game.player.speed);
-	// 	}
-	// });
 
 }, function() {
 	Crafty.viewport.x = 0;
