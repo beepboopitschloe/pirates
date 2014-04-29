@@ -350,6 +350,7 @@ Crafty.c('Enemy', {
 			.bind('MoveFinished', this.checkSquare);
 
 		this.turn = true;
+		this.speed = 200;
 	},
 
 	checkSquare: function() {

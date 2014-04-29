@@ -141,7 +141,7 @@ Crafty.c('FighterBrainRandom', {
 			}
 		}
 
-		return 'parryHigh';
+		return action;
 	}
 });
 
