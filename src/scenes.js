@@ -147,27 +147,6 @@ Crafty.scene('GameOver', function(win) {
 	this.unbind('KeyDown', this.restartGame);
 });
 
-Crafty.scene('MainMenu', function() {
-	text = Crafty.e('2D, Canvas, Color, Mouse')
-		.attr({
-			x: Game.viewportWidth()/8,
-			y: Game.viewportHeight()/3*2,
-			w: 124,
-			h: 124
-		});
-		// .text('Play')
-		// .textFont({ size: '24px', family: 'Courier'})
-		// .textColor('#FFFFFF', 1.0)
-	text.areaMap([text.x, text.y], [text.x+text.w, text.y+text.h]);
-	text.bind('MouseUp', function() {
-		console.log('clicked');
-		Crafty.scene('Game');
-	});
-	console.log(text);
-}, function() {
-
-});
-
 Crafty.scene('Loading', function() {
 	Crafty.e('2D, DOM, Text')
 		.text('Loading')
@@ -175,7 +154,8 @@ Crafty.scene('Loading', function() {
 
 	Crafty.load(['img/environment.gif',
 			'img/playerFighter.png',
-			'img/oceanTile.png'], function() {
+			'img/oceanTile.png',
+			'gui/button.png'], function() {
 		Crafty.sprite(32, 'img/environment.gif', {
 			spr_rock: [0, 0],
 			spr_island: [1, 0],
@@ -185,7 +165,12 @@ Crafty.scene('Loading', function() {
 
 		Crafty.sprite(128, 'img/playerFighter.png', {
 			spr_fighter_tmp: [0, 0]
-		}, 0, 2);
+		});
+
+		Crafty.sprite(190, 51, 'gui/button.png', {
+			gui_btn: [0, 0],
+			gui_btnPressed: [0, 1]
+		});
 
 		Crafty.scene('MainMenu');
 	});

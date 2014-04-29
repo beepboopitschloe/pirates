@@ -189,6 +189,6 @@ window.onload = function() {
 	Game.start();
 
 	$("#map-btn").on('click', function(e) {
-		World.showMapModal();
+		World.toggleMapModal();
 	});
 }
