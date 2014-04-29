@@ -251,12 +251,6 @@ Crafty.c('MapQuad', {
 	}
 });
 
-Crafty.c('Rock', {
-	init: function() {
-		this.requires('MapObject, spr_rock, Solid');
-	}
-});
-
 Crafty.c('Island', {
 	init: function() {
 		this.requires('MapObject, spr_island, Solid');
@@ -288,6 +282,12 @@ Crafty.c('Port', {
 		this.metaDef.beVisited();
 	}
 });
+
+Crafty.c('PirateFortress', {
+	init: function() {
+		this.requires('Actor, spr_fortress');
+	}
+})
 
 Crafty.c('Actor', {
 	init: function() {
@@ -412,7 +412,7 @@ Crafty.c('PlayerShip', {
 			target.x = 1;
 			target.y = 0;
 		} else if (this.isDown('T')) {
-			Crafty.scene('Duel', Crafty.e('Enemy'));
+			Crafty.scene('PirateFortress');
 		} else if (this.isDown('V')) {
 			Crafty.scene('GameOver', true);
 		} else if (this.isDown('L')) {
@@ -450,6 +450,8 @@ Crafty.c('PlayerShip', {
 			}
 			else if (objArray[i].has('Enemy')) {
 				this.touchEnemy(objArray[i]);
+			} else if (objArray[i].has('PirateFortress')) {
+				Crafty.scene('PirateFortress');
 			}
 		}
 	},

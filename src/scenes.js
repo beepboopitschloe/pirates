@@ -162,7 +162,7 @@ Crafty.scene('Loading', function() {
 			'gui/selector.png',
 			'gui/title.png'], function() {
 		Crafty.sprite(32, 'img/environment.gif', {
-			spr_rock: [0, 0],
+			spr_fortress: [0, 0],
 			spr_island: [1, 0],
 			spr_port: [0, 1],
 			spr_player: [1, 1]

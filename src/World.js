@@ -470,6 +470,8 @@ World = {
 
 			this.generateIsland(x,y);
 		}
+
+		this.spawnFortress();
 	},
 
 	findChunk: function(entity) {
@@ -484,6 +486,25 @@ World = {
 			x: Math.floor(x/this.chunkWidth),
 			y: Math.floor(y/this.chunkHeight)
 		};
+	},
+
+	spawnFortress: function() {
+		var chunk, placeX, placeY;
+
+		// find empty chunk
+		do {
+			var chunk = this.worldMap[Math.floor(this.rng()*this.worldWidth)][Math.floor(this.rng()*this.worldHeight)];
+		} while (!chunk.empty);
+
+		// place fortress at random
+		placeX = (chunk.x*this.chunkWidth) + Math.floor(this.rng()*this.chunkWidth);
+		placeY = (chunk.y*this.chunkHeight) + Math.floor(this.rng()*this.chunkHeight);
+
+		Game.addObject(Crafty.e('PirateFortress').at(placeX, placeY));
+
+		// chunk is no longer empty
+		chunk.empty = false;
+		console.log(chunk);
 	},
 
 	// spawn player

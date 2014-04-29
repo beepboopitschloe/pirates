@@ -90,7 +90,7 @@ Crafty.c('FighterBrainRandom', {
 		this.requires('FighterCore');
 
 		this.speed = 250;
-		this.baseAttackSpeed = 625;
+		this.baseAttackSpeed = 800; // 625 better?
 
 		this.setupSpeed();
 
@@ -141,7 +141,7 @@ Crafty.c('FighterBrainRandom', {
 			}
 		}
 
-		return action;
+		return 'parryHigh';
 	}
 });
 
@@ -478,7 +478,7 @@ Crafty.c('FighterCore', {
 
 	update: function() {
 		if (!this.canAct || this.stunned || this.dead) {
-			console.log("stunned?", this.stunned);
+			// console.log("stunned?", this.stunned);
 			return;
 		} else if (this.getAction) {
 			var nextAction = this.getAction();
