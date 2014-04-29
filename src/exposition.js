@@ -6,7 +6,7 @@ ExpoHandler = {
 	tutorialLines :[
 		"Basic controls- use WASD to move while in your ship, and press M to see the map.",
 		"On the map you can see the location of several islands. On each of these islands is a city; and in each of these cities is a captive crewmate. Be careful, though- one of the islands is the Pirate Fortress, and you probably don't want to mess with that until you've got some muscle behind you.",
-		"You'll notice that you have some resources at the right: Money, Food, and Crew. Money is pretty straightforward, you buy things with it. You can get more money by defeating pirates on the open sea or from the fighting pits in towns. Food is also pretty straightforward, you need it to live. Run out of food and your crew starves and dies. Crew, well, you need at least one crew member to operate the boat. Every fight you lose, you lose a crew member. They are not easy to replace. You can rescue them from ports or take on new hires at the store for $1500 a pop.",
+		"You'll notice that you have some resources at the right: Money, Food, and Crew. Money is pretty straightforward, you buy things with it. You can get more money by defeating pirates on the open sea or from the fighting pits in towns. Food is also pretty straightforward, you need it to live. Run out of food and your crew starves and dies. Crew, well, you need at least one crew member to operate the boat. Every fight you lose at sea or in the Pirate Fortress, you will lose a crew member. They are not easy to replace. You can rescue them from ports or take on new hires at the store for $1500 a pop. NOTE: you can't lose crew members during any fights in port, so don't be afraid to try the fighting pits and rescue missions!",
 		"You're gonna do a lot of <b>fighting</b> in this game. It might take you a couple tries to get the hang of it, so don't worry if you lose a lot at first. When you start the fight, you have <em>control</em> of the battle. This means that you can attack. Press W for a high slash, D for a stab, and S for a low kick. If the enemy fails to parry you, they'll dodge away; first person to fall off the platform loses. If they successfully parry you, you'll lose control of the battle, meaning that you can only parry and not attack. The same buttons correspond to the same types of actions- press W to parry a high chop, D to parry a stab, S to parry a low kick.",
 		"When you get to the <b>Pirate Fortress</b>, you can enter it just by going on top of it. Once inside, though, there's no going back. There are three levels to the fortress; if you can beat them all, you win the game, but if you lose a fight, you go back to level one and lose a crew member. Run out of crew members and you're done.",
 		"Thanks for playing Tokidoki Pirate Panic. Please don't hesitate to send feedback to noahmuth (at) gmail.com!"
@@ -19,6 +19,7 @@ ExpoHandler = {
 	expoContainer: $("#expo-container"),
 
 	intro: function() {
+		this.expoModal.modal({backdrop: 'static', keyboard: true});
 		this.expoModal.modal('show');
 
 		if (this.currentLine == -1) {
@@ -26,6 +27,8 @@ ExpoHandler = {
 		}
 
 		this.expoBtn.on("click", this.nextLine.bind(this));
+
+		this.expoModal.on("hidden.bs.modal", function() {Crafty.scene('Game')});
 	},
 
 	nextLine: function() {
