@@ -15,14 +15,9 @@ Crafty.c('MenuItem', {
 							h: this.h
 						})
 						.text(obj.text);
-
-<<<<<<< HEAD
-		this.text.textFont({ size: '24px', family: 'Courier', weight: 'bold' });
-=======
 		size = obj.size || '24px';
 
 		this.text.textFont({ size: size, family: 'Courier', weight: 'bold' });
->>>>>>> origin/master
 
 		return this;
 	},
