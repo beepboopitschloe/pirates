@@ -106,7 +106,12 @@ Crafty.scene('PirateFortress', function(level) {
 		this.resolve = this.one('FighterLost', function(loser) {
 			console.log(loser);
 			if (loser.has && loser.has('FighterBrainPlayer')) {
-				Crafty.scene('GameOver');
+				Player.crew(Player.crew() - 1);
+				if (Player.crew() > 0) {
+					Crafty.scene('PirateFortress', 1);
+				} else {
+					Crafty.scene('GameOver');
+				}
 			} else {
 				console.log(++level);
 				if (level > 3) {

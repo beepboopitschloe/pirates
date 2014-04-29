@@ -459,7 +459,7 @@ Crafty.c('PlayerShip', {
 			} else if (objArray[i].has('Enemy')) {
 				this.touchEnemy(objArray[i]);
 			} else if (objArray[i].has('PirateFortress')) {
-				Crafty.scene('PirateFortress');
+				this.touchPirateFortress();
 			}
 		}
 	},
@@ -506,6 +506,17 @@ Crafty.c('PlayerShip', {
 	touchEnemy: function(enemy) {
 		World.save();
 		Crafty.scene('Duel', enemy);
+	},
+
+	touchPirateFortress: function() {
+		if (Game.numPrisonersLeft() > 0) {
+			if (!confirm("You haven't rescued all your crewmates yet. Are you sure you want to continue?")) {
+				return;
+			}
+		}
+
+		if (confirm("Once you enter the fortress, there is no going back! You will either win the game or die inside. Are you sure you want to continue?"))
+			Crafty.scene('PirateFortress');
 	},
 
 	// Registers a stop-movement function to be called when
