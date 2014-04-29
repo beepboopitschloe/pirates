@@ -1,5 +1,5 @@
-Crafty.scene('Game', function() {
-	if (Crafty.storage("World:stored")) {
+Crafty.scene('Game', function(load) {
+	if (load && Crafty.storage("World:stored")) {
 		World.load();
 	} else {
 		World.createNew();
