@@ -122,6 +122,20 @@ Crafty.scene('MainMenu', function() {
 	}]
 
 	menu = new Menu(Game.viewportWidth()/8, Game.viewportHeight()/16*9, options);
-}, function() {
+});
 
+Crafty.scene('PauseMenu', function() {
+	var options = [{
+		text: 'Resume',
+		action: function() {
+			Crafty.scene('Game', true);
+		}
+	}, {
+		text: 'Main Menu',
+		action: function() {
+			Crafty.scene('MainMenu');
+		}
+	}]
+
+	menu = new Menu(Game.viewportWidth()/8, Game.viewportHeight()/16*9, options);
 });

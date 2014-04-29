@@ -416,12 +416,13 @@ Crafty.c('PlayerShip', {
 			target.x = 1;
 			target.y = 0;
 		} else if (this.isDown('T')) {
-			World.save();
 			Crafty.scene('Duel', Crafty.e('Enemy'));
 		} else if (this.isDown('V')) {
 			Crafty.scene('GameOver', true);
 		} else if (this.isDown('L')) {
 			Crafty.scene('GameOver', false);
+		} else if (this.isDown('ESC')) {
+			Crafty.scene('PauseMenu');
 		}
 
 		if (target.x !== undefined && this.controlsEnabled) {

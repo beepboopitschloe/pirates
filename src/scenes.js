@@ -100,6 +100,9 @@ Crafty.scene('Game', function(load) {
 }, function() {
 	Crafty.viewport.x = 0;
 	Crafty.viewport.y = 0;
+
+	World.save();
+
 	this.unbind('PortVisited', this.showVictory);
 	this.unbind('PlayerFinishMove', this.spawnAndRemoveEnemies);
 	this.unbind('KeyDown', this.showWorldMap);
