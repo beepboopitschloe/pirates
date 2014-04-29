@@ -1,6 +1,6 @@
 @font-face {
-	font-family: KenPixelMini;
-	src: url(gui/kenpixel_mini.ttf);
+	font-family: "KenPixel Mini";
+	src: url("gui/kenpixel_mini.ttf");
 }
 
 body, html {
