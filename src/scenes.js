@@ -143,7 +143,8 @@ Crafty.scene('Loading', function() {
 			'gui/selector.png',
 			'gui/Title.png',
 			'gui/port.png',
-			'gui/store.png'], function() {
+			'gui/store.png',
+			'gui/fightingRingMenu.png'], function() {
 		Crafty.sprite(32, 'img/environment.gif', {
 			spr_fortress: [0, 0],
 			spr_island: [1, 0],
@@ -174,6 +175,10 @@ Crafty.scene('Loading', function() {
 
 		Crafty.sprite(640, 480, 'gui/store.png', {
 			gui_store: [0, 0]
+		});
+
+		Crafty.sprite(640, 480, 'gui/fightingRingMenu.png', {
+			gui_fightingRingMenu: [0, 0]
 		});
 
 		Crafty.scene('MainMenu');
