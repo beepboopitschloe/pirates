@@ -4,7 +4,7 @@ Player = {
 	status: {
 		food: 1000,
 		money: 500,
-		crew: 10
+		crew: 5
 	},
 
 	money: function(num) {

@@ -31,11 +31,11 @@ body, html {
 	margin-bottom: 10px;
 }
 
-body .modal {
+#world-map-modal {
 	left: -512px;
 }
 
-body .modal-content {
+#world-map-modal .modal-content {
     /* new custom width */
     width: 1024px;
 }

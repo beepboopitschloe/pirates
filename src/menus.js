@@ -5,6 +5,11 @@ Crafty.c('MenuItem', {
 		this.action = function() { console.log("No action specified.") };
 	},
 
+	setMenu: function(m) {
+		this.menu = m;
+		return this;
+	},
+
 	setText: function(obj) {
 		var size;
 		this.text = Crafty.e('2D, DOM, Text')
@@ -85,6 +90,8 @@ Menu = function(x, y, options, defaultOption) {
 	this.options = new Array(options.length);
 	this.defaultOption = defaultOption || 0;
 
+	this.controlOn = true;
+
 	for (var i=0; i<options.length; i++) {
 		var optStr = options[i].text,
 			action = options[i].action;
@@ -95,10 +102,21 @@ Menu = function(x, y, options, defaultOption) {
 								y: this.y + (64*i)
 							})
 							.setText(options[i])
-							.setAction(action);
+							.setAction(action)
+							.setMenu(this);
 	}
 
 	this.selector = Crafty.e('MenuSelector').MenuSelector(this);
+}
+
+Menu.prototype.toggleControl = function() {
+	if (this.controlOn) {
+		this.controlOn = false;
+		this.selector.unbind('KeyDown', this.selector.handleKeys);
+	} else {
+		this.controlOn = true;
+		this.selector.bind('KeyDown', this.selector.handleKeys);
+	}
 }
 
 Menu.prototype.select = function(optNum) {
@@ -117,7 +135,9 @@ Crafty.scene('MainMenu', function() {
 	var options = [{
 		text: 'New Game',
 		action: function() {
-			Crafty.scene('Game');
+			console.log(this);
+			this.menu.toggleControl();
+			ExpoHandler.intro();
 		}
 	}, {
 		text: 'Load Game',
