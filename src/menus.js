@@ -5,7 +5,8 @@ Crafty.c('MenuItem', {
 		this.action = function() { console.log("No action specified.") };
 	},
 
-	setText: function(text) {
+	setText: function(obj) {
+		var size;
 		this.text = Crafty.e('2D, DOM, Text')
 						.attr({
 							x: this.x,
@@ -13,9 +14,11 @@ Crafty.c('MenuItem', {
 							w: this.w,
 							h: this.h
 						})
-						.text(text);
+						.text(obj.text);
 
-		this.text.textFont({ size: '24px', family: 'Courier', weight: 'bold' });
+		size = obj.size || '24px';
+
+		this.text.textFont({ size: size, family: 'Courier', weight: 'bold' });
 
 		return this;
 	},
@@ -92,7 +95,7 @@ Menu = function(x, y, options, defaultOption) {
 								x: this.x,
 								y: this.y + (64*i)
 							})
-							.setText(optStr)
+							.setText(options[i])
 							.setAction(action);
 	}
 
@@ -145,3 +148,62 @@ Crafty.scene('PauseMenu', function() {
 
 	menu = new Menu(Game.viewportWidth()/8, Game.viewportHeight()/16*9, options);
 });
+
+Crafty.scene('PortMenu', function(port) {
+	console.log(port);
+
+	this.keyHandler = Crafty.e('Keyboard')
+		.bind('KeyDown', function() {
+			if (this.isDown('ESC')) {
+				Crafty.scene('Game', true);
+			}
+		});
+
+	var options = [{
+		text: 'Visit the store',
+		size: '16px',
+		action: function() {
+			Crafty.scene('PortStore', this);
+		}
+	}, {
+		text: 'Look for your crewmate',
+		size: '16px',
+		action: function() {
+			Crafty.scene('Duel', Crafty.e('Enemy'))
+		}
+	}, {
+		text: 'Return to sea',
+		size: '16px',
+		action: function() {
+			Crafty.scene('Game', true);
+		}
+	}];
+
+	menu = new Menu(Game.viewportWidth()/8, Game.viewportHeight()/2, options);
+});
+
+Crafty.scene('PortStore', function() {
+	var options = [{
+		text: 'Buy 100 food for $100',
+		size: '16px',
+		action: function() {
+			Player.food(Player.food()+100);
+			Player.money(Player.money()-100);
+		}
+	}, {
+		text: 'Hire 1 crew for $50',
+		size: '16px',
+		action: function() {
+			Player.crew(Player.crew()+1);
+			Player.money(Player.money()-50);
+		}
+	}, {
+		text: 'Return to sea',
+		size: '16px',
+		action: function() {
+			Crafty.scene('Game', true);
+		}
+	}];
+
+	menu = new Menu(Game.viewportWidth()/8, Game.viewportHeight()/2, options);
+})

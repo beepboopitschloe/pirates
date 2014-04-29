@@ -18,35 +18,16 @@ Crafty.scene('Duel', function(enemy) {
 	opponent.x -= 4;
 	opponent.facing = -1;
 
-	this.hintText = null;
-
-	this.showHints = this.bind('FighterAction', function(data) {
-		fighter = data.fighter;
-
-		if (fighter.has('FighterBrainPlayer'))
-			return;
-
-		if (this.hintText)
-			this.hintText.destroy();
-
-		this.hintText = (Crafty.e('2D, DOM, Text')
-					.attr({
-						x: fighter.x < Game.viewportWidth()/2?
-							Game.viewportWidth()/2-128 : Game.viewportWidth()/2+128,
-						y: Game.viewportHeight()/3
-					})
-					.text(data.action))
-					.textFont({ size: '24px', family: 'Arial'})
-					.textColor('#990099', 1.0);	
-	});
+	fighter.controlsCombat = true;
 
 	this.resolve = this.bind('FighterLost', function(loser) {
 		if (loser.has && loser.has('FighterBrainPlayer')) {
-			Player.updateStatus({crew: Player.status.crew - 1});
+			Player.crew(Player.crew() - 1);
+		} else if (loser.has && loser.has('FighterCore')) {
+			Player.money(Player.money() + 75);
 		}
-		Crafty.scene('Game');
+		Crafty.scene('Game', true);
 	});
 }, function() {
-	this.unbind('FighterAction', this.showHints);
 	this.unbind('FighterLost', this.resolve);
 });

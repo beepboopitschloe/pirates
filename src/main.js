@@ -32,6 +32,8 @@ Game = {
 	enemies: [],
 	maxEnemies: 50,
 
+	ports: [],
+
 	width: function() {
 		return this.map_grid.tile.margin + (this.map_grid.width * (this.map_grid.tile.width
 					+ this.map_grid.tile.margin));

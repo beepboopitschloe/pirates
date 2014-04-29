@@ -108,7 +108,7 @@ World = {
 	destroy: function() {
 		this.worldMap = [];
 		this.islands = [];
-		this.ports = [];
+		this.portEntities = [];
 	},
 
 	createNew: function(seed) {
@@ -160,14 +160,13 @@ World = {
 
 		// set the ports array to empty -- need entities to handle their own
 		//	saving/loading
-		this.ports = [];
+		this.portEntities = [];
 
 		try {
 			for (key in this.settings) {
 				if (typeof this.settings[key] != "function") {
 					console.log("Storing", key, "as World:settings:" + key);
 					Crafty.storage("World:settings:" + key, this[key]);
-					console.log(Crafty.storage("World:settings:" + key));
 				}
 			}
 		} catch(te) {
@@ -207,9 +206,7 @@ World = {
 			for (key in this.settings) {
 				if (typeof this.settings[key] != "function") {
 					console.log(key, this.settings[key]);
-					console.log("Loading", key, "from World:settings:" + key);
 					this.settings[key] = Crafty.storage("World:settings:" + key);
-					console.log(key, Crafty.storage("World:settings:" + key), this.settings[key]);
 				}
 			}
 		}
@@ -440,9 +437,12 @@ World = {
 			// select a random inhabitable tile
 			var tile = inhabitableTiles[Math.floor(this.rng() * inhabitableTiles.length)];
 
-			var newPort = Crafty.e('Port').at(tile.at().x, tile.at().y);
-			this.ports.push(newPort);
-			Game.addObject(newPort);
+			var portEntity = Crafty.e('Port').at(tile.at().x, tile.at().y);
+
+			this.portEntities.push(portEntity);
+			Game.addObject(portEntity);
+
+			Game.ports.push(new Port(portEntity));
 		}
 
 		// now stuff all this data into an island and add it to the map
@@ -492,7 +492,7 @@ World = {
 			placeX = playerLoc.x;
 			placeY = playerLoc.y;
 		} else {
-			var startPort = this.ports[Math.floor(this.rng() * this.ports.length)];
+			var startPort = this.portEntities[Math.floor(this.rng() * this.portEntities.length)];
 			var placeX = 0; var placeY = 0; var distance = 2;
 
 			do {

@@ -87,12 +87,14 @@ Crafty.c('FighterBrainNeural', {
 
 Crafty.c('FighterBrainRandom', {
 	init: function() {
-		this.requires('FighterCore')
-			.bind('FighterAction', this.respond);
+		this.requires('FighterCore');
 
-		this.speed = 500;
+		this.speed = 250;
+		this.baseAttackSpeed = 500;
 
-		// setInterval(this.update.bind(this), this.speed);
+		this.setupSpeed();
+
+		setInterval(this.update.bind(this), this.speed);
 	},
 
 	respond: function(data) {
@@ -105,17 +107,31 @@ Crafty.c('FighterBrainRandom', {
 		}
 	},
 
+	controlShift: function() {
+		this.controlsCombat = !this.controlsCombat;
+	},
+
 	getAction: function() {
 		var action = "";
 
 		rand = Math.random();
 
-		if (rand < .33) {
-			action = 'strikeHigh';
-		} else if (rand > .33 && rand < .66) {
-			action = 'strikeMid';
+		if (this.controlsCombat) {
+			if (rand < .33) {
+				action = 'strikeHigh';
+			} else if (rand > .33 && rand < .66) {
+				action = 'strikeMid';
+			} else {
+				action = 'strikeLow';
+			}
 		} else {
-			action = 'strikeLow';
+			if (rand < .33) {
+				action = 'parryHigh';
+			} else if (rand > .33 && rand < .66) {
+				action = 'parryMid';
+			} else {
+				action = 'parryLow';
+			}
 		}
 
 		return action;
@@ -143,22 +159,29 @@ Crafty.c('FighterBrainPlayer', {
 		}
 	},
 
+	controlShift: function() {
+		this.controlsCombat = !this.controlsCombat;
+	},
+
 	getAction: function() {
+		var action = '';
+
+		if (this.controlsCombat)
+			action = 'strike';
+		else
+			action = 'parry';
+
 		if (this.isDown('W')) {
-			return 'strikeHigh';
+			action = action + 'High';
 		} else if (this.isDown('D')) {
-			return 'strikeMid';
+			action = action + 'Mid';
 		} else if (this.isDown('S')) {
-			return 'strikeLow';
-		} else if (this.isDown('U')) {
-			return 'parryHigh';
-		} else if (this.isDown('J')) {
-			return 'parryMid';
-		} else if (this.isDown('H')) {
-			return 'parryLow';
+			action = action + 'Low';
 		} else {
 			return null;
 		}
+
+		return action;
 	}
 });
 
@@ -182,6 +205,8 @@ Crafty.c('FighterCore', {
 		this.dead = false;
 
 		this.facing = 1; // -1 left, 1 right
+
+		this.controlsCombat = false;
 
 		this.actions = [
 			'strikeHigh',
@@ -229,6 +254,10 @@ Crafty.c('FighterCore', {
 			}.bind(this),
 		};
 
+		this.setupSpeed();
+	},
+
+	setupSpeed: function() {
 		this.strikes = {
 			strikeHigh: {
 				speed: this.baseAttackSpeed * 1.25,
@@ -244,6 +273,10 @@ Crafty.c('FighterCore', {
 			}
 		};
 
+		this.setupAnimations();
+	},
+
+	setupAnimations: function() {
 		this.reel('Idle', 200, 0, 0, 1)
 			.reel('strikeHigh', this.strikes.strikeHigh.speed, 0, 1, 2)
 			.reel('dodgeHigh', 550, 2, 1, 1)
@@ -287,7 +320,7 @@ Crafty.c('FighterCore', {
 			eventData.parry = true;
 			this.parried = false;
 
-			setTimeout(function() {this.canAct = true;}.bind(this), this.turnSpeed/2);
+			setTimeout(function() {this.canAct = true;}.bind(this), this.turnSpeed);
 		}
 
 		if (reel.id == 'strikeHigh') {
@@ -380,11 +413,12 @@ Crafty.c('FighterCore', {
 				} else {
 					targetX = this.x + ((fighter.x + fighter.dodgeLength) - this.x - this.w);
 				}
-				console.log(targetX, this.x, fighter.x);
 
 				this.tween({x: targetX}, this.leapSpeed);
-			}.bind(this), this.turnSpeed);
+			}.bind(this), 1);
 		} else if (result == 'parried') {
+			this.controlShift();
+			fighter.controlShift();
 			this.stunned = true;
 			setTimeout(function() {this.stunned = false}.bind(this), this.stunLength);
 		}
@@ -446,11 +480,11 @@ Crafty.c('FighterCore', {
 			console.log("Fighter has no brain attached!");
 		}
 
-		if (nextAction.indexOf('strike') > -1) {
+		if (nextAction.indexOf('strike') > -1 && this.controlsCombat) {
 			this.animate(nextAction);
 			this.popForward();
 			this.canAct = false;
-		} else if (nextAction.indexOf('parry') > -1) {
+		} else if (nextAction.indexOf('parry') > -1 && !this.controlsCombat) {
 			this.animate(nextAction);
 			this.canAct = false;
 		}

@@ -281,15 +281,11 @@ Crafty.c('Port', {
 	init: function() {
     	this.requires('Actor, spr_port');
 
-    	this.collected = false;
+    	this.metaDef = null;
   	},
  
-	collect: function() {
-		if (!this.collected) {
-	  		this.collected = true;
-	  		this.destroy();
-	  		Crafty.trigger('PortVisited', this);
-	  	}
+	beVisited: function() {
+		this.metaDef.beVisited();
 	}
 });
 
@@ -474,58 +470,27 @@ Crafty.c('PlayerShip', {
 		}
 	},
 
-	money: function(num) {
-		if (num === undefined) {
-			return Player.status.money;
-		} else {
-			Player.updateStatus({
-				money: num
-			});
-		}
-	},
-
-	food: function(num) {
-		if (num === undefined) {
-			return Player.status.food;
-		} else {
-			Player.updateStatus({
-				food: num
-			});
-		}
-	},
-
-	crew: function(num) {
-		if (num === undefined) {
-			return Player.status.crew;
-		} else {
-			Player.updateStatus({
-				crew: num
-			});
-		}
-	},
-
 	eatFood: function() {
-		this.food(this.food() - this.crew()/2);
+		Player.food(Player.food() - Player.crew()/2);
 
-		if (this.food() <= 0) {
+		if (Player.food() <= 0) {
 			gui.notify({
 				heading: "Out of food!",
-				text: Math.ceil(Math.abs(this.food())/2)
+				text: Math.ceil(Math.abs(Player.food())/2)
 					+ " crew members starved to death.",
 				type: "danger"
 			});
-			this.crew(this.crew() - Math.ceil(Math.abs(this.food())/2));
-			this.food(0);
-			if (this.crew() <= 0) {
-				this.crew(0);
+			Player.crew(Player.crew() - Math.ceil(Math.abs(Player.food())/2));
+			Player.food(0);
+			if (Player.crew() <= 0) {
+				Player.crew(0);
 				Crafty.scene('GameOver', false);
 			}
 		}
 	},
 
 	visitPort: function(port) {
-		this.food(this.food()+5);
-		port.collect();
+		port.beVisited();
 	},
 
 	touchEnemy: function(enemy) {
