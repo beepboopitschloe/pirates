@@ -26,11 +26,13 @@ Game = {
 		}
 	},
 
-	worldSeed: "Test",
+	worldSeed: "default",
 
 	player: null,
 	enemies: [],
 	maxEnemies: 50,
+
+	ports: [],
 
 	width: function() {
 		return this.map_grid.tile.margin + (this.map_grid.width * (this.map_grid.tile.width
@@ -153,10 +155,17 @@ Game = {
 		return (!solid || port);
 	},
 
-	start: function() {
-		// clear the saved world (for testing purposes)
-		World.unsave();
+	numPrisonersLeft: function() {
+		var total = 0;
+		for (var i=0; i<this.ports.length; i++) {
+			if (this.ports[i].hasPrisoner)
+				total++;
+		}
 
+		return total;
+	},
+
+	start: function() {
 		// start Crafty
 		Crafty.init(Game.width(), Game.height(), "cr-stage");
 		// Crafty.timer.FPS(32);

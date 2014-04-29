@@ -1,13 +1,17 @@
 Crafty.scene('Game', function(load) {
 	if (load && Crafty.storage("World:stored")) {
+		console.log('Loading');
 		World.load();
 	} else {
+		World.unsave();
 		World.createNew();
 	}
 
 	if (!Player.ready) {
 		Player.init();
 	}
+
+	Crafty.background('rgb(125, 123, 249)');
 
 	// this.parallax = Crafty.e('Parallax').attr({
 	// 	x: -Crafty.viewport.x - Game.map_grid.tile.width,
@@ -49,6 +53,15 @@ Crafty.scene('Game', function(load) {
 		if (Game.enemies.length < Game.maxEnemies && Math.random() > this.spawnRate) {
 			World.spawnEnemy();
 		}
+
+		fortLoc = Game.pirateFortress.at();
+		pLoc = Game.player.at();
+		if (fortLoc.x > pLoc.x - World.chunkWidth * 2
+				|| fortLoc.x < pLoc.x + World.chunkWidth * 2
+				|| fortLoc.y > pLoc.y - World.chunkHeight * 2
+				|| fortLoc.y < pLoc.y + World.chunkHeight * 2) {
+			Game.pirateFortress.spawnEnemy();
+		}
 	});
 
 	this.showVictory = this.bind('PortVisited', function() {
@@ -67,37 +80,12 @@ Crafty.scene('Game', function(load) {
 		}
 	})
 
-	// this.cameraControl = this.bind('PlayerStartMove', function() {
-	// 	var viewportLeft = -Crafty.viewport.x;
-	// 	var viewportRight = (-Crafty.viewport.x) + (Crafty.viewport.width/Crafty.viewport._scale);
-	// 	var viewportTop = -Crafty.viewport.y;
-	// 	var viewportBottom = (-Crafty.viewport.y) + (Crafty.viewport.height/Crafty.viewport._scale);
-
-	// 	var minX = viewportLeft + ((Crafty.viewport.width/Crafty.viewport._scale)/3);
-	// 	var minY = viewportTop + ((Crafty.viewport.height/Crafty.viewport._scale)/3);
-	// 	var maxX = viewportRight - ((Crafty.viewport.width/Crafty.viewport._scale)/3);
-	// 	var maxY = viewportBottom - ((Crafty.viewport.width/Crafty.viewport._scale)/3);
-
-	// 	if (Game.player.x < minX) {
-	// 		// Crafty.viewport.scroll('x',
-	// 		// 	-(Game.player.x + (Game.player.w / 2) - (Crafty.viewport.width / 2)));
-	// 		Crafty.viewport.pan('x', -Game.map_grid.tile.width, Game.player.speed);
-	// 	} else if (Game.player.x+Game.player.w > maxX) {
-	// 		Crafty.viewport.pan('x', Game.map_grid.tile.width, Game.player.speed);
-	// 	}
-
-	// 	if (Game.player.y < minY) {
-	// 		// Crafty.viewport.scroll('y',
-	// 		// 	-(Game.player.y + (Game.player.h / 2) - (Crafty.viewport.height / 2)));
-	// 		Crafty.viewport.pan('y', -Game.map_grid.tile.height, Game.player.speed);
-	// 	} else if (Game.player.y > maxY) {	
-	// 		Crafty.viewport.pan('y', Game.map_grid.tile.height, Game.player.speed);
-	// 	}
-	// });
-
 }, function() {
 	Crafty.viewport.x = 0;
 	Crafty.viewport.y = 0;
+
+	World.save();
+
 	this.unbind('PortVisited', this.showVictory);
 	this.unbind('PlayerFinishMove', this.spawnAndRemoveEnemies);
 	this.unbind('KeyDown', this.showWorldMap);
@@ -133,11 +121,7 @@ Crafty.scene('GameOver', function(win) {
 		.css("text-align", "center");
 
 	this.restartGame = this.bind('KeyDown', function() {
-		Crafty.scene('Game');
-		gui.notify({
-			text: 'Game restarted.',
-			type: 'success'
-		});
+		window.location.reload(true);
 	});
 
 	this.clickHandler = this.bind('Click', function(e) {
@@ -155,9 +139,13 @@ Crafty.scene('Loading', function() {
 	Crafty.load(['img/environment.gif',
 			'img/playerFighter.png',
 			'img/oceanTile.png',
-			'gui/button.png'], function() {
+			'gui/button.png',
+			'gui/selector.png',
+			'gui/title.png',
+			'gui/port.png',
+			'gui/store.png'], function() {
 		Crafty.sprite(32, 'img/environment.gif', {
-			spr_rock: [0, 0],
+			spr_fortress: [0, 0],
 			spr_island: [1, 0],
 			spr_port: [0, 1],
 			spr_player: [1, 1]
@@ -170,6 +158,22 @@ Crafty.scene('Loading', function() {
 		Crafty.sprite(190, 51, 'gui/button.png', {
 			gui_btn: [0, 0],
 			gui_btnPressed: [0, 1]
+		});
+
+		Crafty.sprite(27, 28, 'gui/selector.png', {
+			gui_selector: [0, 0]
+		});
+
+		Crafty.sprite(640, 480, 'gui/title.png', {
+			gui_title: [0, 0]
+		});
+
+		Crafty.sprite(640, 480, 'gui/port.png', {
+			gui_port: [0, 0]
+		});
+
+		Crafty.sprite(640, 480, 'gui/store.png', {
+			gui_store: [0, 0]
 		});
 
 		Crafty.scene('MainMenu');

@@ -251,12 +251,6 @@ Crafty.c('MapQuad', {
 	}
 });
 
-Crafty.c('Rock', {
-	init: function() {
-		this.requires('MapObject, spr_rock, Solid');
-	}
-});
-
 Crafty.c('Island', {
 	init: function() {
 		this.requires('MapObject, spr_island, Solid');
@@ -281,17 +275,23 @@ Crafty.c('Port', {
 	init: function() {
     	this.requires('Actor, spr_port');
 
-    	this.collected = false;
+    	this.metaDef = null;
   	},
  
-	collect: function() {
-		if (!this.collected) {
-	  		this.collected = true;
-	  		this.destroy();
-	  		Crafty.trigger('PortVisited', this);
-	  	}
+	beVisited: function() {
+		this.metaDef.beVisited();
 	}
 });
+
+Crafty.c('PirateFortress', {
+	init: function() {
+		this.requires('Actor, spr_fortress');
+	},
+
+	spawnEnemy: function() {
+		Crafty.e('Enemy').at(this.at().x, this.at().y);
+	}
+})
 
 Crafty.c('Actor', {
 	init: function() {
@@ -346,12 +346,11 @@ Crafty.c('Actor', {
 Crafty.c('Enemy', {
 	init: function() {
 		this.requires('Actor, spr_player')
+			.bind('PlayerFinishMove', this.update)
 			.bind('MoveFinished', this.checkSquare);
 
-		var that = this;
-		this.updateLoop = setInterval(function() {
-			that.update()
-		}, 750);
+		this.turn = true;
+		this.speed = 200;
 	},
 
 	checkSquare: function() {
@@ -359,6 +358,12 @@ Crafty.c('Enemy', {
 	},
 
 	update: function() {
+		if (!this.turn) {
+			this.turn = true;
+			return;
+		} else {
+			this.turn = false;
+		}
 		target = {
 			x:0,
 			y:0
@@ -416,12 +421,13 @@ Crafty.c('PlayerShip', {
 			target.x = 1;
 			target.y = 0;
 		} else if (this.isDown('T')) {
-			World.save();
-			Crafty.scene('Duel', Crafty.e('Enemy'));
+			Crafty.scene('PirateFortress');
 		} else if (this.isDown('V')) {
 			Crafty.scene('GameOver', true);
 		} else if (this.isDown('L')) {
 			Crafty.scene('GameOver', false);
+		} else if (this.isDown('ESC')) {
+			Crafty.scene('PauseMenu');
 		}
 
 		if (target.x !== undefined && this.controlsEnabled) {
@@ -450,9 +456,10 @@ Crafty.c('PlayerShip', {
 		for (var i=0; i<objArray.length; i++) {
 			if (objArray[i].has('Port')) {
 				this.visitPort(objArray[i]);
-			}
-			else if (objArray[i].has('Enemy')) {
+			} else if (objArray[i].has('Enemy')) {
 				this.touchEnemy(objArray[i]);
+			} else if (objArray[i].has('PirateFortress')) {
+				this.touchPirateFortress();
 			}
 		}
 	},
@@ -473,63 +480,43 @@ Crafty.c('PlayerShip', {
 		}
 	},
 
-	money: function(num) {
-		if (num === undefined) {
-			return Player.status.money;
-		} else {
-			Player.updateStatus({
-				money: num
-			});
-		}
-	},
-
-	food: function(num) {
-		if (num === undefined) {
-			return Player.status.food;
-		} else {
-			Player.updateStatus({
-				food: num
-			});
-		}
-	},
-
-	crew: function(num) {
-		if (num === undefined) {
-			return Player.status.crew;
-		} else {
-			Player.updateStatus({
-				crew: num
-			});
-		}
-	},
-
 	eatFood: function() {
-		this.food(this.food() + this.crew()/2);
+		Player.food(Player.food() - Player.crew()/2);
 
-		if (this.food() <= 0) {
+		if (Player.food() <= 0) {
 			gui.notify({
 				heading: "Out of food!",
-				text: Math.ceil(Math.abs(this.food())/2)
+				text: Math.ceil(Math.abs(Player.food())/2)
 					+ " crew members starved to death.",
 				type: "danger"
 			});
-			this.crew(this.crew() - Math.ceil(Math.abs(this.food())/2));
-			this.food(0);
-			if (this.crew() <= 0) {
-				this.crew(0);
+			Player.crew(Player.crew() - Math.ceil(Math.abs(Player.food())/2));
+			Player.food(0);
+			if (Player.crew() <= 0) {
+				Player.crew(0);
 				Crafty.scene('GameOver', false);
 			}
 		}
 	},
 
 	visitPort: function(port) {
-		this.food(this.food()+5);
-		port.collect();
+		port.beVisited();
 	},
 
 	touchEnemy: function(enemy) {
 		World.save();
 		Crafty.scene('Duel', enemy);
+	},
+
+	touchPirateFortress: function() {
+		if (Game.numPrisonersLeft() > 0) {
+			if (!confirm("You haven't rescued all your crewmates yet. Are you sure you want to continue?")) {
+				return;
+			}
+		}
+
+		if (confirm("Once you enter the fortress, there is no going back! You will either win the game or die inside. Are you sure you want to continue?"))
+			Crafty.scene('PirateFortress');
 	},
 
 	// Registers a stop-movement function to be called when

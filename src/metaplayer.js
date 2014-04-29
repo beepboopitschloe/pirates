@@ -7,6 +7,36 @@ Player = {
 		crew: 10
 	},
 
+	money: function(num) {
+		if (num === undefined) {
+			return this.status.money;
+		} else {
+			this.updateStatus({
+				money: num
+			});
+		}
+	},
+
+	food: function(num) {
+		if (num === undefined) {
+			return this.status.food;
+		} else {
+			this.updateStatus({
+				food: num
+			});
+		}
+	},
+
+	crew: function(num) {
+		if (num === undefined) {
+			return this.status.crew;
+		} else {
+			this.updateStatus({
+				crew: num
+			});
+		}
+	},
+
 	updateStatus: function(obj) {
 		if (this.status === undefined) {
 			this.status = {
@@ -15,6 +45,8 @@ Player = {
 				crew: 0
 			}
 		}
+
+		obj = obj || {};
 
 		this.status.money = obj.money !== undefined? Math.floor(obj.money)
 								: this.status.money;

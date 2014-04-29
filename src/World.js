@@ -72,13 +72,14 @@ World = {
 		islandToOceanRatio: 1/10,
 
 		playerSpawn: { x: 0, y: 0 },
+
+		seed: null
 	},
 
 	worldMap: [],
 	islands: [],
 	ports: [],
 
-	seed: null,
 	rng: Math.random,
 
 	mapModal: $('#world-map-modal'),
@@ -98,15 +99,16 @@ World = {
 			}
 		}
 
-		this.numIslands = Math.floor((this.worldWidth * this.worldHeight * this.islandToOceanRatio)
-							+ (this.rng() * 3) - 1);
+		// this.numIslands = Math.floor((this.worldWidth * this.worldHeight * this.islandToOceanRatio)
+		// 					+ (this.rng() * 3) - 1);
+		this.numIslands = 5;
 		console.log(this.numIslands, 'islands');
 	},
 
 	destroy: function() {
 		this.worldMap = [];
 		this.islands = [];
-		this.ports = [];
+		this.portEntities = [];
 	},
 
 	createNew: function(seed) {
@@ -128,6 +130,11 @@ World = {
 
 		this.generate();
 		this.spawnPlayer();
+
+		// set up ports
+		for (var i=0; i<this.portEntities.length; i++) {
+			Game.ports.push(new Port(this.portEntities[i]));
+		}
 	},
 
 	recreate: function() {
@@ -150,6 +157,11 @@ World = {
 		}
 
 		this.spawnPlayer(playerLoc);
+
+		// set up ports
+		for (var i=0; i<this.portEntities.length; i++) {
+			Game.ports[i].setEntity(this.portEntities[i]);
+		}
 	},
 
 	save: function() {
@@ -158,13 +170,13 @@ World = {
 
 		// set the ports array to empty -- need entities to handle their own
 		//	saving/loading
-		this.ports = [];
+		this.portEntities = [];
 
 		try {
 			for (key in this.settings) {
 				if (typeof this.settings[key] != "function") {
 					console.log("Storing", key, "as World:settings:" + key);
-					Crafty.storage("World:settings:"+key, this[key]);
+					Crafty.storage("World:settings:" + key, this[key]);
 				}
 			}
 		} catch(te) {
@@ -184,7 +196,7 @@ World = {
 			for (key in this.settings) {
 				if (typeof this.settings[key] != "function") {
 					console.log("Deleting World:settings:" + key + " from storage");
-					Crafty.storage.remove("World:settings:"+key);
+					Crafty.storage.remove("World:settings:" + key);
 				}
 			}
 		} catch(te) {
@@ -203,8 +215,8 @@ World = {
 		if (Crafty.storage("World:stored")) {
 			for (key in this.settings) {
 				if (typeof this.settings[key] != "function") {
-					console.log("Loading", key, "from World:settings:" + key);
-					this.settings[key] = Crafty.storage("World:settings:"+key);
+					console.log(key, this.settings[key]);
+					this.settings[key] = Crafty.storage("World:settings:" + key);
 				}
 			}
 		}
@@ -435,9 +447,10 @@ World = {
 			// select a random inhabitable tile
 			var tile = inhabitableTiles[Math.floor(this.rng() * inhabitableTiles.length)];
 
-			var newPort = Crafty.e('Port').at(tile.at().x, tile.at().y);
-			this.ports.push(newPort);
-			Game.addObject(newPort);
+			var portEntity = Crafty.e('Port').at(tile.at().x, tile.at().y);
+
+			this.portEntities.push(portEntity);
+			Game.addObject(portEntity);
 		}
 
 		// now stuff all this data into an island and add it to the map
@@ -457,7 +470,7 @@ World = {
 			}
 		}
 
-		for (var i=0; i<this.numIslands-1; i++) {
+		for (var i=0; i<this.numIslands; i++) {
 			do {
 				x = Math.floor(this.rng() * this.worldWidth);
 				y = Math.floor(this.rng() * this.worldHeight);
@@ -465,6 +478,8 @@ World = {
 
 			this.generateIsland(x,y);
 		}
+
+		this.spawnFortress();
 	},
 
 	findChunk: function(entity) {
@@ -481,13 +496,33 @@ World = {
 		};
 	},
 
+	spawnFortress: function() {
+		var chunk, placeX, placeY;
+
+		// find empty chunk
+		do {
+			var chunk = this.worldMap[Math.floor(this.rng()*this.worldWidth)][Math.floor(this.rng()*this.worldHeight)];
+		} while (!chunk.empty);
+
+		// place fortress at random
+		placeX = (chunk.x*this.chunkWidth) + Math.floor(this.rng()*this.chunkWidth);
+		placeY = (chunk.y*this.chunkHeight) + Math.floor(this.rng()*this.chunkHeight);
+
+		Game.pirateFortress = Crafty.e('PirateFortress').at(placeX, placeY);
+		Game.addObject(Game.pirateFortress);
+
+		// chunk is no longer empty
+		chunk.empty = false;
+		console.log(chunk);
+	},
+
 	// spawn player
 	spawnPlayer: function(playerLoc) {
 		if (playerLoc && playerLoc.x && playerLoc.y) {
 			placeX = playerLoc.x;
 			placeY = playerLoc.y;
 		} else {
-			var startPort = this.ports[Math.floor(this.rng() * this.ports.length)];
+			var startPort = this.portEntities[Math.floor(this.rng() * this.portEntities.length)];
 			var placeX = 0; var placeY = 0; var distance = 2;
 
 			do {
