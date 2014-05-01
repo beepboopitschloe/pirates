@@ -2,11 +2,13 @@ Crafty.c('FighterBrainNeural', {
 	init: function() {
 		this.requires('FighterCore, Keyboard')
 			.bind('KeyDown', this.keys)
-			.bind('FighterAction', this.respond);
+			.bind('FighterAction', this.respond)
+			.bind('FighterAttackResolved', this.punishOnHit);
 
 		this.inputs = [0, 0, 0];
 
-		this.brain = new NeuralNet();
+		this.speed = 250;
+		this.baseAttackSpeed = 625;
 
 		this.outText = Crafty.e('2D, DOM, Text')
 			.text('Fighter output')
@@ -17,6 +19,17 @@ Crafty.c('FighterBrainNeural', {
 				y:Game.height()/2 - 24,
 				w: Game.width()
 			});
+
+		this.interval = setInterval(function() {
+			if (this.controlsCombat)
+				this.update();
+		}.bind(this), this.speed);
+	},
+
+	setBrain: function(b) {
+		this.brain = b;
+
+		return this;
 	},
 
 	trainAgainstCurrentInput: function() {
@@ -42,7 +55,48 @@ Crafty.c('FighterBrainNeural', {
 
 		this.inputs.unshift(this.actions.indexOf(data.action));
 		this.inputs.pop();
+
 		this.update();
+	},
+
+	controlShift: function() {
+		this.controlsCombat = !this.controlsCombat;
+
+		if (!this.previousOutputs) {
+			return;
+		}
+
+		if (this.controlsCombat) {
+			console.log("rewarding control shift");
+			this.brain.reward(this.previousOutputs, 10);
+		} else {
+			console.log("punishing control shift");
+			this.brain.reward(this.previousOutputs, -10);
+		}
+	},
+
+	punishOnHit: function(data) {
+		if (data.resolvedBy != this)
+			return;
+
+		var action = data.action,
+			result = data.result;
+
+		if (result == 'dodged') {
+			var targetOutput = [],
+				bestResponse = this.bestResponse(action);
+
+			for (var i=0; i<this.previousOutputs.length; i++) {
+				if (this.actions[i] == bestResponse) {
+					targetOutput[i] = 1;
+				}
+				else
+					targetOutput[i] = this.previousOutputs[i];
+			}
+
+			console.log("punishing for hit with target", targetOutput);
+			this.brain.reward(this.previousOutputs, 100, targetOutput);
+		}
 	},
 
 	getAction: function() {
@@ -59,7 +113,7 @@ Crafty.c('FighterBrainNeural', {
 		var strongestOutput = 0;
 		var strongest = 0;
 		var msg = 'OUTPUTS';
-		for (var i=0; i<outputs.length; i++) {
+		for (var i=this.controlsCombat? 0 : 3; i< (this.controlsCombat? 3 : outputs.length); i++) {
 			if (outputs[i] > strongest) {
 				strongestOutput = i;
 				strongest = outputs[i];
@@ -75,11 +129,16 @@ Crafty.c('FighterBrainNeural', {
 
 		this.outText.text(outStr);
 
+		console.log("response", this.inputs[0], this.bestResponse(this.inputs[0]));
 		if (strongestOutput == this.bestResponse(this.inputs[0])) {
+			console.log("rewarding", this.actions[strongestOutput], "as response to", this.bestResponse(this.inputs[0]));
 			this.brain.reward(outputs, 10);
 		} else {
-			this.brain.reward(outputs, -1);
+			console.log("punishing", this.actions[strongestOutput], "as response to", this.bestResponse(this.inputs[0]));
+			this.brain.reward(outputs, -10);
 		}
+
+		this.previousOutputs = outputs;
 
 		return this.actions[strongestOutput];
 	}
@@ -297,6 +356,10 @@ Crafty.c('FighterCore', {
 	},
 
 	bestResponse: function(action) {
+		if (typeof action == 'number') {
+			action = this.actions[action];
+		}
+
 		switch (action) {
 			case 'strikeHigh':
 				return 'parryHigh';
@@ -412,7 +475,6 @@ Crafty.c('FighterCore', {
 			result = data.result;
 
 		if (result == 'dodged') {
-			console.log('dodged');
 			setTimeout(function() {
 				var targetX;
 				if (this.x > fighter.x) {

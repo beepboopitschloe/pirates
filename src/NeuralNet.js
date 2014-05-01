@@ -288,30 +288,59 @@ function randomClamped() {
 	}
 
 	NeuralNet.prototype.reward = function(output, rewardAmount, target) {
-		if (rewardAmount > 0) {
-			console.log("reward", rewardAmount);
-			for (var i=0; i<rewardAmount; i++) {
-				if (target == null) {
-					var amplifiedOutput = [];
-					for (var j=0; j<output.length; j++) {
-						amplifiedOutput[j] = output[j];
-					}
-					this.doBackPropagation(output, amplifiedOutput);
-				} else {
-					this.doBackPropagation(output, target);
-				}
+		var originalOutput = [], indexes = [];
+
+		// if we have a target then just do that
+		if (target) {
+			console.log('doing', Math.abs(rewardAmount), 'reward/punish cycles from given target');
+
+			for (var i=0; i<Math.abs(rewardAmount); i++) {
+				this.doBackPropagation(output, target);
 			}
+
+			return;
+		}
+
+		// copy the original output so that we can do sorts
+		for (var i=0; i<output.length; i++) {
+			originalOutput[i] = output[i];
+		}
+
+		// identify strongest and weakest outputs, leave the others alone
+		var strongestOutput = 0, weakestOutput = 1;
+		for (var i=0; i<output.length; i++) {
+			if (output[i] > strongestOutput) {
+				strongestOutput = output[i];
+			} if (output[i] < weakestOutput) {
+				weakestOutput = output[i];
+			}
+		}
+
+		if (rewardAmount > 0) {
+			console.log("reward", rewardAmount, output);
+
+			output[output.indexOf(strongestOutput)] = 1;
+			output[output.indexOf(weakestOutput)] = 0;
+
+			// do backprop
+			for (var i=0; i<rewardAmount; i++) {
+				this.doBackPropagation(originalOutput, output);
+			}
+
 			console.log("finished reward");
 		} else if (rewardAmount < 0) {
-			console.log("punishment", rewardAmount);
-			for (var i=0; i>rewardAmount; i--) {
-				var randomTarget = [];
-				for (var k=0; k<output.length; k++) {
-					randomTarget[k] = Math.random();
-				}
+			console.log("punishment", rewardAmount, output);
 
-				this.doBackPropagation(output, randomTarget);
+			// just do some fuzz
+			var fuzzyTarget = [];
+			for (var i=0; i<output.length; i++) {
+				fuzzyTarget[i] = randomClamped();
 			}
+
+			for (var i=0; i>rewardAmount; i--) {
+				this.doBackPropagation(originalOutput, fuzzyTarget);
+			}
+
 			console.log("finished punishment");
 		} else {
 			console.log("No reward amount given");
@@ -322,3 +351,5 @@ function randomClamped() {
 		return (sigmoid(-netInput/response));
 	}
 }
+
+SuperBrain = new NeuralNet();

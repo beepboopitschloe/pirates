@@ -421,7 +421,7 @@ Crafty.c('PlayerShip', {
 			target.x = 1;
 			target.y = 0;
 		} else if (this.isDown('T')) {
-			Crafty.scene('PirateFortress');
+			Crafty.scene('DuelNeural');
 		} else if (this.isDown('V')) {
 			Crafty.scene('GameOver', true);
 		} else if (this.isDown('L')) {
