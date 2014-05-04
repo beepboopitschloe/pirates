@@ -510,10 +510,10 @@ Crafty.c('FighterCore', {
 
 	isFalling: function() {
 		if (this.facing == 1) {
-			if (this.x + this.w < Game.duelStage.x)
+			if (this.vulnerableArea.right() < Game.duelStage.x)
 				return true;
 		} else if (this.facing == -1) {
-			if (this.x > Game.duelStage.x + Game.duelStage.w)
+			if (this.vulnerableArea.left() > Game.duelStage.x + Game.duelStage.w)
 				return true;
 		}
 
