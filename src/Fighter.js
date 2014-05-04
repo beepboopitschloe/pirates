@@ -285,10 +285,11 @@ Crafty.c('FighterCore', {
 
 		this.vulnerableArea = {
 			left: function() {
-				return this.x+(32*this.facing);
+				// console.log(this.x+32, this.vulnerableArea.right(), this.facing, (this.x+32) < this.vulnerableArea.right());
+				return this.x+(32);
 			}.bind(this),
 			right: function() {
-				return this.x+(80*this.facing);
+				return this.x+(80);
 			}.bind(this),
 			top: function() {
 				return this.y;
@@ -297,11 +298,9 @@ Crafty.c('FighterCore', {
 				return this.y+this.h;
 			}.bind(this),
 			contains: function(x, y) {
-				if (this.facing == 1) {
+				if (this.facing == 1 || this.facing == -1) {
 					// console.log(x, this.vulnerableArea.left(), this.vulnerableArea.right());
 					return (x < this.vulnerableArea.right());
-				} else if (this.facing == -1) {
-					return (x > this.vulnerableArea.right());
 				} else {
 					return false;
 				}
@@ -513,7 +512,7 @@ Crafty.c('FighterCore', {
 			if (this.vulnerableArea.right() < Game.duelStage.x)
 				return true;
 		} else if (this.facing == -1) {
-			if (this.vulnerableArea.left() > Game.duelStage.x + Game.duelStage.w)
+			if (this.vulnerableArea.left() > Game.duelStage.x + Game.duelStage.w) 
 				return true;
 		}
 
@@ -539,6 +538,15 @@ Crafty.c('FighterCore', {
 	},
 
 	update: function() {
+		// this.dr = Crafty.e('2D, DebugRectangle')
+		// 	.attr({
+		// 		x: this.vulnerableArea.left(),
+		// 		y: this.vulnerableArea.top(),
+		// 		w: this.vulnerableArea.right() - this.vulnerableArea.left(),
+		// 		h: this.vulnerableArea.bottom() - this.vulnerableArea.top()
+		// 	})
+		// 	.debugStroke('green');
+		// this.dr.debugRectangle(this.dr);
 		if (!this.canAct || this.stunned || this.dead) {
 			// console.log("stunned?", this.stunned);
 			return;

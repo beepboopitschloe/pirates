@@ -1,28 +1,31 @@
 Crafty.c('MenuItem', {
 	init: function() {
-		this.requires('2D, Canvas, gui_btn');
+		this.requires('2D, Canvas, gui_btn, Mouse');
 		this.text = null;
 		this.action = function() { console.log("No action specified.") };
 	},
 
 	setMenu: function(m) {
 		this.menu = m;
+		this.bind('MouseOver', this.handleMouse);
+		this.areaMap([this.x, this.y], [this.x+this.w, this.y], [this.x+this.w, this.y+this.h], [this.x, this.y+this.h]);
+		console.log(this.mapArea);
 		return this;
 	},
 
 	setText: function(obj) {
 		var size;
-		this.text = Crafty.e('2D, DOM, Text')
-						.attr({
-							x: this.x,
-							y: this.y+10,
-							w: this.w,
-							h: this.h
-						})
-						.text(obj.text);
-		size = obj.size || '24px';
+		// this.text = Crafty.e('2D, DOM, Text')
+		// 				.attr({
+		// 					x: this.x,
+		// 					y: this.y+10,
+		// 					w: this.w,
+		// 					h: this.h
+		// 				})
+		// 				.text(obj.text);
+		// size = obj.size || '24px';
 
-		this.text.textFont({ size: size, family: 'Courier', weight: 'bold' });
+		// this.text.textFont({ size: size, family: 'Courier', weight: 'bold' });
 
 		return this;
 	},
@@ -31,12 +34,21 @@ Crafty.c('MenuItem', {
 		this.action = func;
 
 		return this;
+	},
+
+	select: function() {
+		console.log(this.menu.options.indexOf(this));
+		this.menu.select(this.menu.options.indexOf(this));
+	},
+
+	handleMouse: function(e) {
+		this.select();
 	}
 });
 
 Crafty.c('MenuSelector', {
 	init: function() {
-		this.requires('2D, Canvas, Keyboard, gui_selector');
+		this.requires('2D, Canvas, Keyboard, gui_selector, Mouse');
 		this.offsetX = 175;
 		this.offsetY = 12;
 	},
@@ -50,6 +62,7 @@ Crafty.c('MenuSelector', {
 		});
 
 		this.bind('KeyDown', this.handleKeys);
+		this.bind('Click', function() { console.log('clicked'); });
 
 		this.choice = menu.defaultOption;
 
