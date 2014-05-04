@@ -57,9 +57,9 @@ Crafty.c('MenuSelector', {
 	},
 
 	handleKeys: function() {
-		if (this.isDown('W')) {
+		if (this.isDown('W') || this.isDown('UP_ARROW')) {
 			this.setChoice(this.choice - 1);
-		} else if (this.isDown('S')) {
+		} else if (this.isDown('S') || this.isDown('DOWN_ARROW')) {
 			this.setChoice(this.choice + 1);
 		} else if (this.isDown('ENTER')) {
 			this.select();

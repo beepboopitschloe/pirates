@@ -237,11 +237,11 @@ Crafty.c('FighterBrainPlayer', {
 		else
 			action = 'parry';
 
-		if (this.isDown('W')) {
+		if (this.isDown('W') || this.isDown('UP_ARROW')) {
 			action = action + 'High';
-		} else if (this.isDown('D')) {
+		} else if (this.isDown('D') || this.isDown('RIGHT_ARROW')) {
 			action = action + 'Mid';
-		} else if (this.isDown('S')) {
+		} else if (this.isDown('S') || this.isDown('DOWN_ARROW')) {
 			action = action + 'Low';
 		} else {
 			return null;

@@ -408,16 +408,16 @@ Crafty.c('PlayerShip', {
 	update: function() {
 		target = {};
 
-		if (this.isDown('W')) {
+		if (this.isDown('W') || this.isDown('UP_ARROW')) {
 			target.x = 0;
 			target.y = -1;
-		} else if (this.isDown('A')) {
+		} else if (this.isDown('A') || this.isDown('LEFT_ARROW')) {
 			target.x = -1;
 			target.y = 0;
-		} else if (this.isDown('S')) {
+		} else if (this.isDown('S') || this.isDown('DOWN_ARROW')) {
 			target.x = 0;
 			target.y = 1;
-		} else if (this.isDown('D')) {
+		} else if (this.isDown('D') || this.isDown('RIGHT_ARROW')) {
 			target.x = 1;
 			target.y = 0;
 		} else if (this.isDown('T')) {
