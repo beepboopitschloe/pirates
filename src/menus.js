@@ -15,17 +15,17 @@ Crafty.c('MenuItem', {
 
 	setText: function(obj) {
 		var size;
-		// this.text = Crafty.e('2D, DOM, Text')
-		// 				.attr({
-		// 					x: this.x,
-		// 					y: this.y+10,
-		// 					w: this.w,
-		// 					h: this.h
-		// 				})
-		// 				.text(obj.text);
-		// size = obj.size || '24px';
+		this.text = Crafty.e('2D, DOM, Text')
+						.attr({
+							x: this.x,
+							y: this.y+10,
+							w: this.w,
+							h: this.h
+						})
+						.text(obj.text);
+		size = obj.size || '24px';
 
-		// this.text.textFont({ size: size, family: 'Courier', weight: 'bold' });
+		this.text.textFont({ size: size, family: 'Courier', weight: 'bold' });
 
 		return this;
 	},
